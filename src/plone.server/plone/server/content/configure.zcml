@@ -1,0 +1,36 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope">
+
+    <include package="plone.behavior" />
+
+    <include package=".serialize" />
+    <include package=".deserialize" />
+
+    <!-- Schema cache -->
+    <subscriber handler=".schema.invalidate_schema" />
+
+    <!-- Support for plone.behavior behaviors -->
+    <adapter factory=".behavior.DexterityBehaviorAssignable" />
+
+    <!-- Register FTI add/remove/modify handlers -->
+    <subscriber
+        for=".interfaces.IDexterityFTI
+             zope.lifecycleevent.interfaces.IObjectAddedEvent"
+        handler=".fti.ftiAdded"
+        />
+
+    <subscriber
+        for=".interfaces.IDexterityFTI
+             zope.lifecycleevent.interfaces.IObjectRemovedEvent"
+        handler=".fti.ftiRemoved"
+        />
+
+
+    <!-- NameChooserAdapter -->
+    <adapter
+        provides="plone.server.interfaces.INameChooser"
+        for="plone.server.content.interfaces.IDexterityContent"
+        factory="plone.server.content.name_chooser.NameChooser"
+        />
+
+</configure>

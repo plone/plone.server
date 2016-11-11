@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from aiohttp.web import StreamResponse
 from os.path import basename
-from plone.dexterity.fti import IDexterityFTI
+from plone.server.content.fti import IDexterityFTI
 from plone.jsonserializer.interfaces import ISerializeToJson
 from plone.server.api.service import DownloadService
 from plone.server.api.service import Service

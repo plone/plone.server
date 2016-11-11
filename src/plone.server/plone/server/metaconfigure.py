@@ -3,8 +3,8 @@ from collections import MutableMapping
 from collections import OrderedDict
 from functools import reduce
 from pathlib import Path as osPath
-from plone.dexterity.fti import DexterityFTI
-from plone.dexterity.fti import register
+from plone.server.content.fti import DexterityFTI
+from plone.server.content.fti import register
 from plone.server import _
 from plone.server import AVAILABLE_ADDONS
 from plone.server import DEFAULT_LAYER
@@ -12,7 +12,7 @@ from plone.server import DEFAULT_PERMISSION
 from plone.server import DICT_LANGUAGES
 from plone.server import DICT_METHODS
 from plone.server import DICT_RENDERS
-from plone.server.content import StaticDirectory
+from plone.server.types import StaticDirectory
 from plone.server.interfaces import IApplication
 from plone.server.security import ViewPermissionChecker
 from plone.server.utils import import_class

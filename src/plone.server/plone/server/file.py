@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 from persistent import Persistent
-from plone.dexterity.interfaces import IDexterityContent
+from plone.server.content.interfaces import IDexterityContent
 from plone.server.interfaces import IFile
 from plone.server.interfaces import IFileField
 from plone.server.interfaces import IFileManager

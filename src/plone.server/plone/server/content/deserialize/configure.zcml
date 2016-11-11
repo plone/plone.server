@@ -1,0 +1,17 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="plone.restapi">
+
+  <adapter factory=".content.DeserializeFromJson" />
+  <adapter factory=".fields.DefaultFieldDeserializer" />
+<!--   <adapter factory=".fields.DatetimeFieldDeserializer" />
+  <adapter factory=".fields.CollectionFieldDeserializer" />
+  <adapter factory=".fields.DictFieldDeserializer" />
+  <adapter factory=".fields.TimeFieldDeserializer" />
+  <adapter factory=".fields.TimedeltaFieldDeserializer" />
+  <adapter factory=".fields.NamedFieldDeserializer" />
+  <adapter factory=".fields.RichTextFieldDeserializer" />
+  <adapter factory=".fields.RelationChoiceFieldDeserializer" />
+ -->
+</configure>

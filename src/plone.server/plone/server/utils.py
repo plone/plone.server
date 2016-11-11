@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from aiohttp.web_exceptions import HTTPUnauthorized
-from plone.server.registry import ICors
+from plone.server.config import ICors
 
 import fnmatch
 import importlib

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plone.dexterity.fti import IDexterityFTI
+from plone.server.content.fti import IDexterityFTI
 from plone.server.browser import View
 from plone.server.interfaces import IDownloadView
 from plone.server.interfaces import ITraversableView

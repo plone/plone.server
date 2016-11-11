@@ -2,30 +2,17 @@
 from datetime import datetime
 from dateutil.tz import tzlocal
 from dateutil.tz import tzutc
-from plone.dexterity.interfaces import IDexterityContent
-from plone.dexterity.interfaces import IFormFieldProvider
-from plone.i18n.locales.languages import _languagelist
-from plone.server import DICT_LANGUAGES
+from plone.server.content.interfaces import IDexterityContent
+from plone.server.content.interfaces import IFormFieldProvider
 from plone.server.behaviors.properties import ContextProperty
-from plone.supermodel import model
-from plone.supermodel.directives import catalog
-from plone.supermodel.directives import index
-from zope import schema
+from plone.server.content import model
+from plone.server.content.directives.base import catalog
+from plone.server.content.directives.base import index
 from zope.component import adapter
 from zope.dublincore.annotatableadapter import ZDCAnnotatableAdapter
 from zope.dublincore.interfaces import IWriteZopeDublinCore
 from zope.interface import provider
-from zope.schema.vocabulary import SimpleTerm
-from zope.schema.vocabulary import SimpleVocabulary
 
-
-OPTIONS = [
-    SimpleTerm(value=_languagelist[l]['native'],
-               token=l,
-               title=_languagelist[l]['name'])
-    for l in DICT_LANGUAGES.keys() if l in _languagelist
-]
-language_vocabulary = SimpleVocabulary(OPTIONS)
 _zone = tzlocal()
 _utc = tzutc()
 

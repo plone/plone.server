@@ -1,4 +1,4 @@
-from plone.dexterity.interfaces import IDexterityFTI
+from plone.server.content.interfaces import IDexterityFTI
 from plone.jsonserializer.interfaces import ISerializeToJson
 from plone.server.interfaces import IRequest
 from plone.server.renderers import IFrameFormatsJson

@@ -131,7 +131,7 @@
                 "permission": "plone.DeletePortals"                
             }
         },
-        "plone.dexterity.interfaces.IDexterityContent": {
+        "plone.server.content.interfaces.IDexterityContent": {
             "GET": {
                 "factory": "plone.server.api.dexterity.DefaultGET",
                 "permission": "plone.ViewContent"

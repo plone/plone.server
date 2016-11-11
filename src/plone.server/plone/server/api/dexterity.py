@@ -3,7 +3,7 @@ from aiohttp.web_exceptions import HTTPMethodNotAllowed
 from aiohttp.web_exceptions import HTTPNotFound
 from aiohttp.web_exceptions import HTTPUnauthorized
 from datetime import datetime
-from plone.dexterity.utils import createContentInContainer
+from plone.server.content.utils import createContentInContainer
 from plone.jsonserializer.exceptions import DeserializationError
 from plone.jsonserializer.interfaces import IDeserializeFromJson
 from plone.jsonserializer.interfaces import ISerializeToJson
@@ -13,14 +13,14 @@ from plone.server.browser import ErrorResponse
 from plone.server.browser import Response
 from plone.server.events import ObjectFinallyCreatedEvent
 from plone.server.interfaces import IAbsoluteURL
-from plone.server.registry import ICors
+from plone.server.config import ICors
 from plone.server.utils import DefaultRootCors
 from plone.server.utils import get_authenticated_user_id
 from plone.server.utils import iter_parents
 from random import randint
 from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
-from zope.container.interfaces import INameChooser
+from plone.server.interfaces import INameChooser
 from zope.event import notify
 from zope.securitypolicy.interfaces import IPrincipalPermissionMap
 from zope.securitypolicy.interfaces import IPrincipalRoleManager

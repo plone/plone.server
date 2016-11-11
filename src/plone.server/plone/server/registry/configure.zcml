@@ -1,0 +1,12 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    i18n_domain="plone.registry">
+
+    <adapter factory=".fieldfactory.persistentFieldAdapter" />
+    <adapter factory=".fieldfactory.choicePersistentFieldAdapter" />
+
+    <subscriber handler=".events.redispatchInterfaceAwareRecordEvents" />
+
+    <include package=".deserialize" />
+
+</configure>

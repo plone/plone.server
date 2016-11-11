@@ -8,12 +8,12 @@ setup(
     long_description=(open('README.rst').read() + '\n' +
                       open('CHANGELOG.rst').read()),
     classifiers=[
-        'Framework :: Plone :: 7.0',
+        'Framework :: PloneServer :: 1.0',
         'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     url='https://pypi.python.org/pypi/plone.server',
-    license='GPL version 3',
+    license='MIT',
     setup_requires=[
         'pytest-runner',
     ],
@@ -24,26 +24,21 @@ setup(
     install_requires=[
         'aiohttp==1.0.5',
         'cchardet',
-        'aiodns',
         'ujson',
-        'crypto',
         'pycrypto',
         'BTrees',
         'cchardet',
-        'plone.dexterity',
         'plone.jsonserializer',
-        'plone.registry',
-        'plone.supermodel',
-        'plone.i18n',
-        'plone.indexer',
-        'repoze.workflow',
+        'plone.behavior',
         'setuptools',
         'transaction',
         'ZODB',
         'ZEO',
         'zope.component',
         'zope.configuration',
+        'zope.copy',
         'zope.dottedname',
+        'zope.dublincore',
         'zope.event',
         'zope.i18n',
         'zope.i18nmessageid',
@@ -52,6 +47,7 @@ setup(
         'zope.proxy',
         'zope.schema',
         'zope.security',
+        'zope.securitypolicy'
     ],
     extras_require={
         'test': [

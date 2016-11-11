@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from plone.dexterity.utils import iterSchemataForType
+from plone.server.content.utils import iterSchemataForType
 from plone.server.catalog.interfaces import ICatalogDataAdapter
 from plone.server.catalog.interfaces import ICatalogUtility
 from plone.server.security import getPrincipalsWithAccessContent
 from plone.server.security import getRolesWithAccessContent
 from plone.server.utils import get_content_path
-from plone.supermodel.interfaces import CATALOG_KEY
-from plone.supermodel.utils import mergedTaggedValueDict
-from plone.uuid.interfaces import IUUID
+from plone.server.content.interfaces import CATALOG_KEY
+from plone.server.content.utils import mergedTaggedValueDict
+from plone.server.uuid.interfaces import IUUID
 from zope.component import queryAdapter
 from zope.interface import implementer
 from zope.schema import getFields

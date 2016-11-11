@@ -1,19 +1,20 @@
 <configure xmlns="http://namespaces.zope.org/zope"
            xmlns:plone="http://namespaces.plone.org/plone">
 
+  <include package="plone.behavior" file="meta.zcml" />
 
   <plone:behavior
       title="Dublin Core fields"
       provides=".dublincore.IDublinCore"
       factory=".dublincore.DublinCore"
-      for="plone.dexterity.interfaces.IDexterityContent"
+      for="plone.server.content.interfaces.IDexterityContent"
       />
 
   <plone:behavior
       title="Attachment"
       provides=".attachment.IAttachment"
       factory=".attachment.Attachment"
-      for="plone.dexterity.interfaces.IDexterityContent"
+      for="plone.server.content.interfaces.IDexterityContent"
       />
 
 
