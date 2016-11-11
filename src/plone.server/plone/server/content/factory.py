@@ -1,34 +1,23 @@
 # -*- coding: utf-8 -*-
-from persistent import Persistent
-from plone.server.content.interfaces import IDexterityFactory
-from plone.server.content.interfaces import IDexterityFTI
+from plone.server.content.interfaces import IFactory
+from plone.server.content.interfaces import IFTI
 from plone.server.content.utils import resolveDottedName
 from zope.component import getUtility
-from zope.component.factory import Factory
+from zope.component.factory import Factory as ZopeFactory
 from zope.interface import implementer
 from zope.interface.declarations import Implements
 
 
-@implementer(IDexterityFactory)
-class DexterityFactory(Persistent, Factory):
+@implementer(IFactory)
+class Factory(ZopeFactory):
     """A factory for Dexterity content.
     """
 
     def __init__(self, portal_type):
         self.portal_type = portal_type
 
-    @property
-    def title(self):
-        fti = getUtility(IDexterityFTI, name=self.portal_type)
-        return fti.title
-
-    @property
-    def description(self):
-        fti = getUtility(IDexterityFTI, name=self.portal_type)
-        return fti.description
-
     def __call__(self, *args, **kw):
-        fti = getUtility(IDexterityFTI, name=self.portal_type)
+        fti = getUtility(IFTI, name=self.portal_type)
 
         klass = resolveDottedName(fti.klass)
         if klass is None or not callable(klass):
@@ -54,7 +43,7 @@ class DexterityFactory(Persistent, Factory):
         return obj
 
     def getInterfaces(self):
-        fti = getUtility(IDexterityFTI, name=self.portal_type)
+        fti = getUtility(IFTI, name=self.portal_type)
         spec = Implements(fti.lookupSchema())
         spec.__name__ = self.portal_type
         return spec

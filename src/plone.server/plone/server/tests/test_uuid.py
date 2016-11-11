@@ -1,5 +1,5 @@
 import unittest
-
+from aiohttp.test_utils import make_mocked_request
 import sys
 
 
@@ -82,54 +82,6 @@ class TestUUID(unittest.TestCase):
         notify(ObjectCopiedEvent(copied, original=context))
         self.assertNotEqual(uuid, None)
         self.assertNotEqual(uuid, IUUID(copied, None))  # copy has new UID
-
-    def test_uuid_view_not_set(self):
-
-        from zope.interface import implementer
-        from zope.component import getMultiAdapter
-        from zope.publisher.browser import TestRequest
-
-        from plone.server.uuid.interfaces import IAttributeUUID
-
-        @implementer(IAttributeUUID)
-        class Context(object):
-            pass
-
-        context = Context()
-
-        request = TestRequest()
-        view = getMultiAdapter((context, request), name=u"uuid")
-        response = view()
-
-        self.assertEquals(u"", response)
-        self.assertTrue(isinstance(response, str))
-
-    def test_uuid_view(self):
-
-        from zope.interface import implementer
-        from zope.component import getMultiAdapter
-        from zope.event import notify
-        from zope.lifecycleevent import ObjectCreatedEvent
-        from zope.publisher.browser import TestRequest
-
-        from plone.server.uuid.interfaces import IAttributeUUID
-        from plone.server.uuid.interfaces import IUUID
-
-        @implementer(IAttributeUUID)
-        class Context(object):
-            pass
-
-        context = Context()
-        notify(ObjectCreatedEvent(context))
-
-        uuid = IUUID(context, None)
-
-        request = TestRequest()
-        view = getMultiAdapter((context, request), name=u"uuid")
-        response = view()
-
-        self.assertEquals(str(uuid), response)
-        self.assertTrue(isinstance(response, str))
 
     def test_uuid_mutable(self):
         from zope import interface

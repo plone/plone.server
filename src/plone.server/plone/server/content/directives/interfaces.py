@@ -6,41 +6,12 @@ import zope.schema
 
 # Keys for tagged values on interfaces
 
-# absolute file name of model file
-FILENAME_KEY = 'plone.supermodel.filename'
+INDEX_KEY = 'plone.server.catalog.index'
+CATALOG_KEY = 'plone.server.catalog.catalog'
+FIELDSETS_KEY = 'plone.server.content.fieldsets'
+READ_PERMISSIONS_KEY = 'plone.server.content.security.read-permissions'
+WRITE_PERMISSIONS_KEY = 'plone.server.content.security.write-permissions'
 
-# name of schema that was loaded from the model
-SCHEMA_NAME_KEY = 'plone.supermodel.schemaname'
-
-# list of fieldsets
-FIELDSETS_KEY = 'plone.supermodel.fieldsets'
-
-# Primary fields (requires plone.rfc822)
-PRIMARY_FIELDS_KEY = 'plone.supermodel.primary'
-
-# The namespace for the default supermodel schema/field parser
-
-XML_NAMESPACE = u"http://namespaces.plone.org/supermodel/schema"
-I18N_NAMESPACE = u'http://xml.zope.org/namespaces/i18n'
-
-# Security namespace
-
-SECURITY_NAMESPACE = 'http://namespaces.plone.org/supermodel/security'
-SECURITY_PREFIX = 'security'
-
-# Schema interface tagged value keys for security
-try:
-    pkg_resources.get_distribution('plone.autoform')
-except pkg_resources.DistributionNotFound:
-    READ_PERMISSIONS_KEY = u"plone.supermodel.security.read-permissions"
-    WRITE_PERMISSIONS_KEY = u"plone.supermodel.security.write-permissions"
-else:  # BBB for Plone with plone.autoform
-    READ_PERMISSIONS_KEY = u"plone.autoform.security.read-permissions"
-    WRITE_PERMISSIONS_KEY = u"plone.autoform.security.write-permissions"
-
-
-CATALOG_KEY = u"plone.supermodel.directives.catalog"
-INDEX_KEY = u"plone.supermodel.directives.index"
 
 
 class ISchema(IInterface):
@@ -99,92 +70,6 @@ class ISchemaPlugin(Interface):
         """Execute plugin
         """
 
-
-class IXMLToSchema(Interface):
-    """Functionality to parse an XML representation of a schema and return
-    an interface representation with zope.schema fields.
-
-    A file can be parsed purely for a schema. This allows syntax like:
-
-        schema = xmlSchema('schema.xml')
-
-    If a file contains multiple schemata, you can load them all using:
-
-        model = loadFile('schema.xml')
-    """
-
-    def xmlSchema(filename, schema=u"", policy=u""):
-        """Given a filename relative to the current module, return an
-        interface representing the schema contained in that file. If there
-        are multiple <schema /> blocks, return the unnamed one, unless
-        a name is supplied, in which case the 'name' attribute of the schema
-        will be matched to the schema name.
-
-        The policy argument can be used to pick a different parsing policy.
-        Policies must be registered as named utilities providing
-        ISchemaPolicy.
-
-        Raises a KeyError if the schema cannot be found.
-        Raises an IOError if the file cannot be opened.
-        """
-
-    def loadFile(filename, reload=False, policy=u""):
-        """Return an IModel as contained in the given XML file, which is read
-        relative to the current module (unless it is an absolute path).
-
-        If reload is True, reload a schema even if it's cached. If policy
-        is given, it can be used to select a custom schema parsing policy.
-        Policies must be registered as named utilities providing
-        ISchemaPolicy.
-        """
-
-    def loadString(model, policy=u""):
-        """Load a model from a string rather than a file.
-        """
-
-    def serializeSchema(schema, name=u""):
-        """Return an XML string representing the given schema interface. This
-        is a convenience method around the serializeModel() method, below.
-        """
-
-    def serializeModel(model):
-        """Return an XML string representing the given model, as returned by
-        the loadFile() or loadString() method.
-        """
-
-
-class ISchemaPolicy(Interface):
-    """A utility that provides some basic attributes of the generated
-    schemata. Provide a custom one to make policy decisions about where
-    generated schemata live, what bases they have and how they are named.
-    """
-
-    def module(schemaName, tree):
-        """Return the module name to use.
-        """
-
-    def bases(schemaName, tree):
-        """Return the bases to use.
-        """
-
-    def name(schemaName, tree):
-        """Return the schema name to use
-        """
-
-
-class IFieldExportImportHandler(Interface):
-    """Named utilities corresponding to node names should be registered for
-    this interface. They will be called upon to build a schema fields out of
-    DOM ndoes.
-    """
-
-    def read(node):
-        """Read a field from the node and return a new instance
-        """
-
-    def write(field, fieldName, fieldType, elementName='field'):
-        """Create and return a new node representing the given field
-        """
 
 
 class ISchemaMetadataHandler(Interface):

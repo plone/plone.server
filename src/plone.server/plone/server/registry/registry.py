@@ -30,6 +30,8 @@ class Registry(Persistent):
     """The persistent registry
     """
 
+    __name__ = 'registry'
+
     def __init__(self):
         self._records = _Records(self)
 
@@ -139,27 +141,6 @@ class Registry(Persistent):
             prefix,
             factory
         )
-
-    # BBB
-
-    def _migrateRecords(self):
-        """BBB: Migrate from the old Records structure to the new. This is
-        done the first time the "old" structure is accessed.
-        """
-        records = _Records(self)
-
-        oldData = getattr(self._records, 'data', None)
-        if oldData is not None:
-            for name, oldRecord in oldData.iteritems():
-                oldRecord._p_activate()
-                if (
-                    'field' in oldRecord.__dict__
-                    and 'value' in oldRecord.__dict__
-                ):
-                    records._fields[name] = oldRecord.__dict__['field']
-                    records._values[name] = oldRecord.__dict__['value']
-
-        self._records = records
 
 
 class _Records(object):

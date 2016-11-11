@@ -26,7 +26,7 @@ def persistentFieldAdapter(context):
     # See if we have an equivalently-named field
 
     class_name = context.__class__.__name__
-    persistent_class = getattr(plone.registry.field, class_name, None)
+    persistent_class = getattr(plone.server.registry.field, class_name, None)
     if persistent_class is None:
         return None
 

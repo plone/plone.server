@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-from plone.server.content.interfaces import FIELDSETS_KEY
+from plone.server.content.directives.interfaces import FIELDSETS_KEY
 from plone.server.content.interfaces import ISchema
 from plone.server.content.interfaces import ISchemaPlugin
-from plone.server.content.interfaces import READ_PERMISSIONS_KEY
-from plone.server.content.interfaces import WRITE_PERMISSIONS_KEY
-from plone.server.content.interfaces import INDEX_KEY
-from plone.server.content.interfaces import CATALOG_KEY
+from plone.server.content.directives.interfaces import READ_PERMISSIONS_KEY
+from plone.server.content.directives.interfaces import WRITE_PERMISSIONS_KEY
+from plone.server.content.directives.interfaces import INDEX_KEY
+from plone.server.content.directives.interfaces import CATALOG_KEY
 from plone.server.content.model import Fieldset
 from zope.component import adapter
 from zope.interface import implementer
 from zope.interface.interface import TAGGED_DATA
-import os.path
 import sys
 
 # Directive
@@ -74,8 +73,9 @@ class CheckerPlugin(object):
             if fieldName not in schema:
                 raise ValueError(
                     u"The directive %s applied to interface %s "
-                    u"refers to unknown field name %s" % (self.key, schema.__identifier__, fieldName)
-                    )
+                    u"refers to unknown field name %s" % (
+                        self.key, schema.__identifier__, fieldName)
+                )
             yield fieldName
 
     def __call__(self):
@@ -109,56 +109,6 @@ class ListPositionCheckerPlugin(CheckerPlugin):
             return
         for item in self.value:
             yield item[self.position]
-
-
-# Implementations
-
-class load(Directive):
-    """Directive used to specify the XML model file
-    """
-
-    def store(self, tags, value):
-        tags[SCHEMA_NAME_KEY] = value["schema"]
-
-    def factory(self, filename, schema=u""):
-        return dict(filename=filename, schema=schema)
-
-
-@adapter(ISchema)
-@implementer(ISchemaPlugin)
-class SupermodelSchemaPlugin(object):
-
-    order = -1000
-
-    def __init__(self, interface):
-        self.interface = interface
-
-    def __call__(self):
-        interface = self.interface
-        filename = interface.queryTaggedValue(FILENAME_KEY, None)
-        if filename is None:
-            return
-        schema = interface.queryTaggedValue(SCHEMA_NAME_KEY, u"")
-
-        moduleName = interface.__module__
-        module = sys.modules.get(moduleName, None)
-
-        directory = moduleName
-
-        if hasattr(module, '__path__'):
-            directory = module.__path__[0]
-        else:
-            while "." in moduleName:
-                moduleName, _ = moduleName.rsplit('.', 1)
-                module = sys.modules.get(moduleName, None)
-                if hasattr(module, '__path__'):
-                    directory = module.__path__[0]
-                    break
-
-        directory = os.path.abspath(directory)
-        # Let / act as path separator on all platforms
-        filename = filename.replace('/', os.path.sep)
-        filename = os.path.abspath(os.path.join(directory, filename))
 
 
 class fieldset(MetadataListDirective):

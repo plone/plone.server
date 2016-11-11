@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 from persistent import Persistent
-from plone.server.content.interfaces import IDexterityContent
+from plone.server.content.interfaces import IContent
 from plone.server.interfaces import IFile
 from plone.server.interfaces import IFileField
 from plone.server.interfaces import IFileManager
@@ -39,7 +39,7 @@ def get_contenttype(
     return default
 
 
-@adapter(IDexterityContent, IRequest, IFileField)
+@adapter(IContent, IRequest, IFileField)
 @implementer(IFileManager)
 class BasicFileManager(object):
 
@@ -139,7 +139,7 @@ class BasicFile(Persistent):
 
 @implementer(IFileField)
 class BasicFileField(Object):
-    """A NamedBlobFile field
+    """A BasicFile field
     """
 
     _type = BasicFile

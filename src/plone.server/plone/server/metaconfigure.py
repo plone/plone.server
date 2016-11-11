@@ -3,7 +3,7 @@ from collections import MutableMapping
 from collections import OrderedDict
 from functools import reduce
 from pathlib import Path as osPath
-from plone.server.content.fti import DexterityFTI
+from plone.server.content.fti import FTI
 from plone.server.content.fti import register
 from plone.server import _
 from plone.server import AVAILABLE_ADDONS
@@ -80,14 +80,22 @@ class IContentTypeDirective(Interface):
         required=False
     )
 
+    allowed_types = configuration_fields.List(
+        title='',
+        description='',
+        value_type=configuration_fields.TextLine(),
+        required=False
+    )
+
 
 def contenttypeDirective(_context,
                          portal_type,
                          class_,
                          schema,
                          behaviors=[],
-                         add_permission=None):
-    ''' Generate a Dexterity FTI and factory for the passed schema '''
+                         add_permission=None,
+                         allowed_types=None):
+    ''' Generate a FTI and factory for the passed schema '''
     interface_name = schema.__identifier__
     behavior_names = [a.__identifier__ for a in behaviors]
     dotted_name = None
@@ -98,11 +106,12 @@ def contenttypeDirective(_context,
     fti_args = {'id': portal_type,
                 'klass': dotted_name,
                 'schema': interface_name,
-                'behaviors': behavior_names}
+                'behaviors': behavior_names,
+                'allowed_types': allowed_types}
     if add_permission is not None:
         fti_args['add_permission'] = add_permission
 
-    fti = DexterityFTI(**fti_args)
+    fti = FTI(**fti_args)
 
     register(fti)
 

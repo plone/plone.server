@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plone.server.content.fti import IDexterityFTI
+from plone.server.content.fti import IFTI
 from plone.jsonserializer.interfaces import ISerializeToJson
 from plone.server.api.service import TraversableService
 from zope.component import getMultiAdapter
@@ -12,12 +12,12 @@ class Read(TraversableService):
     def publishTraverse(self, traverse):
         if len(traverse) == 1:
             # we want have the key of the registry
-            self.value = queryUtility(IDexterityFTI, name=traverse[0])
+            self.value = queryUtility(IFTI, name=traverse[0])
         return self
 
     async def __call__(self):
         if not hasattr(self, 'value'):
-            self.value = [x[1] for x in getUtilitiesFor(IDexterityFTI)]
+            self.value = [x[1] for x in getUtilitiesFor(IFTI)]
         if isinstance(self.value, list):
             result = []
             for x in self.value:

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from copy import deepcopy
 from datetime import datetime
 from persistent import Persistent
 
@@ -11,23 +10,26 @@ from zope.interface.declarations import Implements
 from zope.interface.declarations import ObjectSpecificationDescriptor
 from zope.interface.declarations import getObjectSpecification
 from zope.interface.declarations import implementedBy
-from zope.schema.interfaces import IContextAwareDefaultFactory
-from plone.server.content.interfaces import IDexterityContainer
-from plone.server.content.interfaces import IDexterityContent
-from plone.server.content.interfaces import IDexterityItem
+from plone.server.content.interfaces import IContainer
+from plone.server.content.interfaces import IContent
+from plone.server.content.interfaces import IItem
 from plone.server.content.schema import SCHEMA_CACHE
 from plone.server.uuid.interfaces import IAttributeUUID
 from plone.server.uuid.interfaces import IUUID
+from zope.lifecycleevent import ObjectAddedEvent
+from zope.lifecycleevent import ObjectModifiedEvent
+from plone.server.content.interfaces import IFTI
+from zope.component import getUtility
 import asyncio
-import six
 from zope.event import notify
 from BTrees.OOBTree import OOBTree
 from BTrees.Length import Length
-from plone.server.content.utils import setitem, uncontained
-from plone.server.content.utils import notifyContainerModified
+from plone.server.content.utils import uncontained
 from plone.server.content.utils import containedEvent
 from persistent.dict import PersistentDict
 from persistent.list import PersistentList
+from copy import deepcopy
+from zope.schema.interfaces import IContextAwareDefaultFactory
 
 _marker = object()
 _zone = tzlocal()
@@ -48,6 +50,7 @@ def _default_from_schema(context, schema, fieldname):
         return deepcopy(bound.default)
     else:
         return deepcopy(field.default)
+    return _marker
 
 
 class FTIAwareSpecification(ObjectSpecificationDescriptor):
@@ -132,19 +135,20 @@ class FTIAwareSpecification(ObjectSpecificationDescriptor):
 
 
 @implementer(
-    IDexterityContent,
+    IContent,
     IAttributeAnnotatable,
     IAttributeUUID
 )
-class DexterityContent(Persistent):
-    """Base class for Dexterity content
-    """
+class Content(Persistent):
+    """Base class for content."""
+
     __parent__ = __name__ = None
 
     __providedBy__ = FTIAwareSpecification()
 
     # portal_type is set by the add view and/or factory
     portal_type = None
+
 
     def __init__(  # noqa
             self,
@@ -160,47 +164,6 @@ class DexterityContent(Persistent):
         for (k, v) in kwargs.items():
             setattr(self, k, v)
 
-    # def __getattr__(self, name):
-    #     # python basics:  __getattr__ is only invoked if the attribute wasn't
-    #     # found by __getattribute__
-    #     #
-    #     # optimization: sometimes we're asked for special attributes
-    #     # such as __conform__ that we can disregard (because we
-    #     # wouldn't be in here if the class had such an attribute
-    #     # defined).
-    #     # also handle special dynamic providedBy cache here.
-    #     if name.startswith('__') or name == '_v__providedBy__':
-    #         raise AttributeError(name)
-
-    #     # attribute was not found; try to look it up in the schema and return
-    #     # a default
-    #     value = _default_from_schema(
-    #         self,
-    #         SCHEMA_CACHE.get(self.portal_type),
-    #         name
-    #     )
-    #     if value is not _marker:
-    #         return value
-
-    #     # do the same for each subtype
-    #     assignable = IBehaviorAssignable(self, None)
-    #     if assignable is not None:
-    #         for behavior_registration in assignable.enumerateBehaviors():
-    #             if behavior_registration.interface:
-    #                 value = _default_from_schema(
-    #                     self,
-    #                     behavior_registration.interface,
-    #                     name
-    #                 )
-    #                 if value is not _marker:
-    #                     return value
-
-    #     raise AttributeError(name)
-
-    # Let __name__ and id be identical. Note that id must be ASCII in Zope 2,
-    # but __name__ should be unicode. Note that setting the name to something
-    # that can't be encoded to ASCII will throw a UnicodeEncodeError
-
     def _get__name__(self):
         return self.id
 
@@ -211,9 +174,50 @@ class DexterityContent(Persistent):
 
     __name__ = property(_get__name__, _set__name__)
 
+    def __getattr__(self, name):
+        # python basics:  __getattr__ is only invoked if the attribute wasn't
+        # found by __getattribute__
+        #
+        # optimization: sometimes we're asked for special attributes
+        # such as __conform__ that we can disregard (because we
+        # wouldn't be in here if the class had such an attribute
+        # defined).
+        # also handle special dynamic providedBy cache here.
+        if name.startswith('__') or name == '_v__providedBy__':
+            raise AttributeError(name)
+
+        # attribute was not found; try to look it up in the schema and return
+        # a default
+        value = _default_from_schema(
+            self,
+            SCHEMA_CACHE.get(self.portal_type),
+            name
+        )
+        if value is not _marker:
+            return value
+
+        # do the same for each subtype
+        assignable = IBehaviorAssignable(self, None)
+        if assignable is not None:
+            for behavior_registration in assignable.enumerateBehaviors():
+                if behavior_registration.interface:
+                    value = _default_from_schema(
+                        self,
+                        behavior_registration.interface,
+                        name
+                    )
+                    if value is not _marker:
+                        return value
+
+        raise AttributeError(name)
+
     def UID(self):
         """Returns the item's globally unique id."""
         return IUUID(self)
+
+    def getTypeInfo(self):
+        fti = getUtility(IFTI, self.portal_type)
+        return fti
 
 
 def synccontext(context):
@@ -225,7 +229,7 @@ def synccontext(context):
 
     Example::
 
-        await sync(request)(txn.commit)
+        await synccontext(request)(txn.commit)
 
     """
     loop = asyncio.get_event_loop()
@@ -237,34 +241,27 @@ def synccontext(context):
         context._p_jar.executor, *args, **kwargs)
 
 
-@implementer(IDexterityItem)
-class Item(DexterityContent):
-    """A non-containerish, CMFish item
-    """
+@implementer(IItem)
+class Item(Content):
+    """A non-containerish."""
 
     __providedBy__ = FTIAwareSpecification()
-
-    # Be explicit about which __getattr__ to use
-    # __getattr__ = DexterityContent.__getattr__
 
 
 @implementer(
-    IDexterityContainer,
+    IContainer,
     IAttributeAnnotatable,
     IAttributeUUID)
-class OrderedContainer(DexterityContent):
-    """Base class for folderish items
-    """
+class OrderedContainer(Content):
+    """Base class for folderish items."""
 
     __providedBy__ = FTIAwareSpecification()
+    allowed_types = None
 
     def __init__(self, id=None, **kwargs):
         self._data = PersistentDict()
         self._order = PersistentList()
-        DexterityContent.__init__(self, id, **kwargs)
-
-    def __getattr__(self, name, default=None):
-        return DexterityContent.__getattr__(self, name)
+        Content.__init__(self, id, **kwargs)
 
     def keys(self):
         return self._order[:]
@@ -298,15 +295,6 @@ class OrderedContainer(DexterityContent):
     def __setitem__(self, key, object):
         existed = key in self._data
 
-        bad = False
-        if not isinstance(key, six.string_types):
-            bad = True
-        if bad:
-            raise TypeError("'%s' is invalid, the key must be an "
-                            "ascii or unicode string" % key)
-        if len(key) == 0:
-            raise ValueError("The key cannot be an empty string")
-
         # We have to first update the order, so that the item is available,
         # otherwise most API functions will lie about their available values
         # when an event subscriber tries to do something with the container.
@@ -315,12 +303,14 @@ class OrderedContainer(DexterityContent):
 
         # This function creates a lot of events that other code listens to.
         try:
-            setitem(self, self._data.__setitem__, key, object)
+            self._data[key] = object
+            object.__parent__ = self
         except Exception:
             if not existed:
                 self._order.remove(key)
             raise
-
+        event = containedEvent(object, self)
+        notify(event)
         return key
 
     def __delitem__(self, key):
@@ -329,55 +319,9 @@ class OrderedContainer(DexterityContent):
         self._order.remove(key)
 
     def updateOrder(self, order):
-        """ See `IOrderedContainer`.
-
-        >>> oc = OrderedContainer()
-        >>> oc['foo'] = 'bar'
-        >>> oc['baz'] = 'quux'
-        >>> oc['zork'] = 'grue'
-        >>> oc.keys()
-        ['foo', 'baz', 'zork']
-        >>> oc.updateOrder(['baz', 'foo', 'zork'])
-        >>> oc.keys()
-        ['baz', 'foo', 'zork']
-        >>> oc.updateOrder(['baz', 'zork', 'foo'])
-        >>> oc.keys()
-        ['baz', 'zork', 'foo']
-        >>> oc.updateOrder(['baz', 'zork', 'foo'])
-        >>> oc.keys()
-        ['baz', 'zork', 'foo']
-        >>> oc.updateOrder(('zork', 'foo', 'baz'))
-        >>> oc.keys()
-        ['zork', 'foo', 'baz']
-        >>> oc.updateOrder(['baz', 'zork'])
-        Traceback (most recent call last):
-        ...
-        ValueError: Incompatible key set.
-        >>> oc.updateOrder(['foo', 'bar', 'baz', 'quux'])
-        Traceback (most recent call last):
-        ...
-        ValueError: Incompatible key set.
-        >>> oc.updateOrder(1)
-        Traceback (most recent call last):
-        ...
-        TypeError: order must be a tuple or a list.
-        >>> oc.updateOrder('bar')
-        Traceback (most recent call last):
-        ...
-        TypeError: order must be a tuple or a list.
-        >>> oc.updateOrder(['baz', 'zork', 'quux'])
-        Traceback (most recent call last):
-        ...
-        ValueError: Incompatible key set.
-        >>> del oc['baz']
-        >>> del oc['zork']
-        >>> del oc['foo']
-        >>> len(oc)
-        0
-        """
 
         if not isinstance(order, list) and \
-            not isinstance(order, tuple):
+                not isinstance(order, tuple):
             raise TypeError('order must be a tuple or a list.')
 
         if len(order) != len(self._order):
@@ -396,12 +340,11 @@ class OrderedContainer(DexterityContent):
             raise ValueError("Incompatible key set.")
 
         self._order = new_order
-        notifyContainerModified(self)
+        notify(ObjectModifiedEvent(self))
 
 
 class Lazy(object):
-    """Lazy Attributes.
-    """
+    """Lazy Attributes."""
 
     def __init__(self, func, name=None):
         if name is None:
@@ -420,17 +363,19 @@ class Lazy(object):
 
 
 @implementer(
-    IDexterityContainer,
+    IContainer,
     IAttributeAnnotatable,
     IAttributeUUID)
-class BTreeContainer(DexterityContent):
+class BTreeContainer(Content):
+
+    allowed_types = None
 
     def __init__(self, id=None, **kwargs):
         # We keep the previous attribute to store the data
         # for backward compatibility
         self._BTreeContainer__data = self._newContainerData()
         self.__len = Length()
-        DexterityContent.__init__(self, id, **kwargs)
+        Content.__init__(self, id, **kwargs)
 
     def _newContainerData(self):
         """Construct an item-data container
@@ -444,8 +389,6 @@ class BTreeContainer(DexterityContent):
         return OOBTree()
 
     def __contains__(self, key):
-        """See interface IReadContainer
-        """
         return key in self.__data
 
     @Lazy
@@ -460,21 +403,13 @@ class BTreeContainer(DexterityContent):
     def __len__(self):
         return self.__len()
 
-    def _setitemf(self, key, value):
-        # make sure our lazy property gets set
-        l = self.__len
-        self.__data[key] = value
-        l.change(1)
-
     def __iter__(self):
         return iter(self.__data)
 
     def __getitem__(self, key):
-        '''See interface `IReadContainer`'''
         return self.__data[key]
 
     def get(self, key, default=None):
-        '''See interface `IReadContainer`'''
         return self.__data.get(key, default)
 
     async def asyncget(self, key):
@@ -484,10 +419,11 @@ class BTreeContainer(DexterityContent):
         if not key:
             raise ValueError("empty names are not allowed")
         object, event = containedEvent(value, self, key)
-        self._setitemf(key, value)
-        if event:
-            notify(event)
-            notifyContainerModified(self)
+        l = self.__len
+        self.__data[key] = value
+        value.__parent__ = self
+        l.change(1)
+        notify(ObjectAddedEvent(value))
 
     def __delitem__(self, key):
         # make sure our lazy property gets set
@@ -507,4 +443,3 @@ class BTreeContainer(DexterityContent):
 
     def values(self, key=None):
         return self.__data.values(key)
-

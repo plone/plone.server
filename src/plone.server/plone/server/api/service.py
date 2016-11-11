@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plone.server.content.fti import IDexterityFTI
+from plone.server.content.interfaces import IFTI
 from plone.server.browser import View
 from plone.server.interfaces import IDownloadView
 from plone.server.interfaces import ITraversableView
@@ -30,11 +30,8 @@ class TraversableFieldService(View):
     def publishTraverse(self, traverse):
         if len(traverse) == 1:
             # we want have the field
-            if not hasattr(self.context, traverse[0]):
-                raise KeyError('No valid name')
-
             name = traverse[0]
-            fti = queryUtility(IDexterityFTI, name=self.context.portal_type)
+            fti = queryUtility(IFTI, name=self.context.portal_type)
             schema = fti.lookupSchema()
 
             field = None

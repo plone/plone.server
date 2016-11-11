@@ -10,17 +10,17 @@
     <subscriber handler=".schema.invalidate_schema" />
 
     <!-- Support for plone.behavior behaviors -->
-    <adapter factory=".behavior.DexterityBehaviorAssignable" />
+    <adapter factory=".behavior.BehaviorAssignable" />
 
     <!-- Register FTI add/remove/modify handlers -->
     <subscriber
-        for=".interfaces.IDexterityFTI
+        for=".interfaces.IFTI
              zope.lifecycleevent.interfaces.IObjectAddedEvent"
         handler=".fti.ftiAdded"
         />
 
     <subscriber
-        for=".interfaces.IDexterityFTI
+        for=".interfaces.IFTI
              zope.lifecycleevent.interfaces.IObjectRemovedEvent"
         handler=".fti.ftiRemoved"
         />
@@ -29,7 +29,7 @@
     <!-- NameChooserAdapter -->
     <adapter
         provides="plone.server.interfaces.INameChooser"
-        for="plone.server.content.interfaces.IDexterityContent"
+        for="plone.server.content.interfaces.IContent"
         factory="plone.server.content.name_chooser.NameChooser"
         />
 

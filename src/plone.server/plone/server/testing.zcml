@@ -5,8 +5,8 @@
 
   <plone:contenttype
       portal_type="File"
-      schema=".content.IItem"
-      class=".content.Item"
+      schema=".types.IItem"
+      class=".types.Item"
       behaviors=".behaviors.dublincore.IDublinCore
                  .behaviors.attachment.IAttachment"
     />

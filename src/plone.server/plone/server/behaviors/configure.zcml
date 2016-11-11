@@ -7,14 +7,14 @@
       title="Dublin Core fields"
       provides=".dublincore.IDublinCore"
       factory=".dublincore.DublinCore"
-      for="plone.server.content.interfaces.IDexterityContent"
+      for="plone.server.content.interfaces.IContent"
       />
 
   <plone:behavior
       title="Attachment"
       provides=".attachment.IAttachment"
       factory=".attachment.Attachment"
-      for="plone.server.content.interfaces.IDexterityContent"
+      for="plone.server.content.interfaces.IContent"
       />
 
 

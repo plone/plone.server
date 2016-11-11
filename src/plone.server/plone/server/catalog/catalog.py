@@ -5,7 +5,7 @@ from plone.server.catalog.interfaces import ICatalogUtility
 from plone.server.security import getPrincipalsWithAccessContent
 from plone.server.security import getRolesWithAccessContent
 from plone.server.utils import get_content_path
-from plone.server.content.interfaces import CATALOG_KEY
+from plone.server.content.directives.interfaces import CATALOG_KEY
 from plone.server.content.utils import mergedTaggedValueDict
 from plone.server.uuid.interfaces import IUUID
 from zope.component import queryAdapter
@@ -57,7 +57,7 @@ class DefaultSearchUtility(object):
         pass
 
     async def reindexAllContent(self, obj):
-        """ For all Dexterity Content add a queue task that reindex the object
+        """ For all Content add a queue task that reindex the object
         """
         pass
 

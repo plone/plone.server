@@ -1,4 +1,4 @@
-from plone.server.content.interfaces import IDexterityContent
+from plone.server.content.interfaces import IContent
 from plone.server.content.interfaces import IFormFieldProvider
 from plone.server.behaviors.properties import ContextProperty
 from plone.server.file import BasicFileField
@@ -16,7 +16,7 @@ class IAttachment(model.Schema):
     )
 
 
-@adapter(IDexterityContent)
+@adapter(IContent)
 class Attachment(ZDCAnnotatableAdapter):
 
     file = ContextProperty(u'file', None)

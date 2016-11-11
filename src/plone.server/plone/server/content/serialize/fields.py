@@ -3,8 +3,8 @@
 # from plone.namedfile.interfaces import INamedFileField
 # from plone.namedfile.interfaces import INamedImageField
 from datetime import timedelta
-from plone.server.content.interfaces import IDexterityContent
-from plone.server.content.interfaces import IDexterityFTI
+from plone.server.content.interfaces import IContent
+from plone.server.content.interfaces import IFTI
 from plone.jsonserializer.interfaces import IFieldDeserializer
 from plone.jsonserializer.interfaces import IFieldSerializer
 from plone.jsonserializer.interfaces import IFieldsetSerializer
@@ -43,7 +43,7 @@ from plone.server.interfaces import IRichText
 import zope.schema
 
 
-@adapter(IField, IDexterityContent, Interface)
+@adapter(IField, IContent, Interface)
 @implementer(IFieldSerializer)
 class DefaultFieldSerializer(object):
 
@@ -61,7 +61,7 @@ class DefaultFieldSerializer(object):
                        default)
 
 
-@adapter(ISchema, IDexterityFTI, Interface)
+@adapter(ISchema, IFTI, Interface)
 @implementer(ISchemaSerializer)
 class DefaultSchemaSerializer(object):
 
@@ -95,7 +95,7 @@ class DefaultSchemaSerializer(object):
         return ''
 
 
-@adapter(IFieldset, ISchema, IDexterityFTI, Interface)
+@adapter(IFieldset, ISchema, IFTI, Interface)
 @implementer(IFieldsetSerializer)
 class DefaultFieldsetSerializer(object):
 
@@ -131,7 +131,7 @@ class DefaultFieldsetSerializer(object):
         return result
 
 
-@adapter(IField, ISchema, IDexterityFTI, Interface)
+@adapter(IField, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class DefaultFTIFieldSerializer(object):
 
@@ -207,12 +207,12 @@ class DefaultFTIFieldSerializer(object):
                     element_name in self.non_validated_field_type_attributes:
                 attribute_field = self.field
 
-            if isinstance(value, bytes) and not isinstance(value, str):
-                value = value.decode('utf-8')
-
-            if value is not None and (force or value != self.field.missing_value):
-                converter = IToUnicode(self.field)
-                text = converter.toUnicode(value)
+            if isinstance(value, bytes):
+                text = value.decode('utf-8')
+            elif isinstance(value, str):
+                text = value
+            elif value is not None and (force or value != self.field.missing_value):
+                text = str(value)
 
                 # handle i18n
                 # if isinstance(value, Message):
@@ -232,7 +232,7 @@ class DefaultFTIFieldSerializer(object):
         return name_extractor()
 
 
-@adapter(IText, ISchema, IDexterityFTI, Interface)
+@adapter(IText, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTITextSerializer(DefaultFTIFieldSerializer):
 
@@ -241,7 +241,7 @@ class FTITextSerializer(DefaultFTIFieldSerializer):
         return 'string'
 
 
-@adapter(ITextLine, ISchema, IDexterityFTI, Interface)
+@adapter(ITextLine, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTITextLineSerializer(DefaultFTIFieldSerializer):
 
@@ -250,7 +250,7 @@ class FTITextLineSerializer(DefaultFTIFieldSerializer):
         return 'string'
 
 
-@adapter(IFloat, ISchema, IDexterityFTI, Interface)
+@adapter(IFloat, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTIFloatSerializer(DefaultFTIFieldSerializer):
 
@@ -259,7 +259,7 @@ class FTIFloatSerializer(DefaultFTIFieldSerializer):
         return 'number'
 
 
-@adapter(IInt, ISchema, IDexterityFTI, Interface)
+@adapter(IInt, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTIIntegerSerializer(DefaultFTIFieldSerializer):
 
@@ -268,7 +268,7 @@ class FTIIntegerSerializer(DefaultFTIFieldSerializer):
         return 'integer'
 
 
-@adapter(IBool, ISchema, IDexterityFTI, Interface)
+@adapter(IBool, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTIBooleanSerializer(DefaultFTIFieldSerializer):
 
@@ -277,7 +277,7 @@ class FTIBooleanSerializer(DefaultFTIFieldSerializer):
         return 'boolean'
 
 
-@adapter(ICollection, ISchema, IDexterityFTI, Interface)
+@adapter(ICollection, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTICollectionSerializer(DefaultFTIFieldSerializer):
 
@@ -286,7 +286,7 @@ class FTICollectionSerializer(DefaultFTIFieldSerializer):
         return 'array'
 
 
-@adapter(IChoice, ISchema, IDexterityFTI, Interface)
+@adapter(IChoice, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTIChoiceSerializer(DefaultFTIFieldSerializer):
 
@@ -295,7 +295,7 @@ class FTIChoiceSerializer(DefaultFTIFieldSerializer):
         return 'string'
 
 
-@adapter(IObject, ISchema, IDexterityFTI, Interface)
+@adapter(IObject, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTIObjectSerializer(DefaultFTIFieldSerializer):
 
@@ -304,7 +304,7 @@ class FTIObjectSerializer(DefaultFTIFieldSerializer):
         return 'object'
 
 
-@adapter(IRichText, ISchema, IDexterityFTI, Interface)
+@adapter(IRichText, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTIRichTextSerializer(DefaultFTIFieldSerializer):
 
@@ -313,7 +313,7 @@ class FTIRichTextSerializer(DefaultFTIFieldSerializer):
         return 'string'
 
 
-@adapter(IDate, ISchema, IDexterityFTI, Interface)
+@adapter(IDate, ISchema, IFTI, Interface)
 @implementer(IFieldSerializer)
 class FTIDateSerializer(DefaultFTIFieldSerializer):
 

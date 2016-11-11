@@ -8,7 +8,7 @@ from aiohttp.web_exceptions import HTTPUnauthorized
 from plone.server.registry.interfaces import IRegistry
 from plone.server import _
 from plone.server import DICT_METHODS
-from plone.server.api.dexterity import DefaultOPTIONS
+from plone.server.api.content import DefaultOPTIONS
 from plone.server.api.layer import IDefaultLayer
 from plone.server.auth.participation import AnonymousParticipation
 from plone.server.browser import ErrorResponse

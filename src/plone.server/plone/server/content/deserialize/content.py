@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from plone.server.content.interfaces import WRITE_PERMISSIONS_KEY
-from plone.server.content.interfaces import IDexterityContent
+from plone.server.content.directives.interfaces import WRITE_PERMISSIONS_KEY
+from plone.server.content.interfaces import IContent
 from plone.server.content.utils import iterSchemata
 from plone.jsonserializer.interfaces import IDeserializeFromJson
 from plone.jsonserializer.exceptions import DeserializationError
 from plone.jsonserializer.interfaces import IFieldDeserializer
 from plone.server.content.utils import mergedTaggedValueDict
+
 from zope.component import adapter
 from zope.component import queryMultiAdapter
 from zope.component import queryUtility
@@ -21,7 +22,7 @@ from zope.security import checkPermission
 
 
 @implementer(IDeserializeFromJson)
-@adapter(IDexterityContent, Interface)
+@adapter(IContent, Interface)
 class DeserializeFromJson(object):
     def __init__(self, context, request):
         self.context = context

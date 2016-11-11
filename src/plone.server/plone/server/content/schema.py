@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from plone.behavior.interfaces import IBehavior
 from plone.behavior.registration import BehaviorRegistration
-from plone.server.content.interfaces import IDexterityFTI
+from plone.server.content.interfaces import IFTI
 from plone.server.content.interfaces import ISchemaInvalidatedEvent
 from threading import RLock
 from zope.component import adapter
@@ -52,22 +52,20 @@ def volatile(func):
     def decorator(self, portal_type):
         """lookup fti from portal_type and cache
         """
-        if IDexterityFTI.providedBy(portal_type):
+        if IFTI.providedBy(portal_type):
             fti = portal_type
         else:
-            fti = queryUtility(IDexterityFTI, name=portal_type)
+            fti = queryUtility(IFTI, name=portal_type)
         if fti is not None and self.cache_enabled:
             key = '_v_schema_{0:s}'.format(func.__name__)
             cache = getattr(fti, key, _MARKER)
             if cache is not _MARKER:
-                mtime, value = cache
-                if fti._p_mtime == mtime:
-                    return value
+                return cache
 
         value = func(self, fti)
 
         if fti is not None and self.cache_enabled:
-            setattr(fti, key, (fti._p_mtime, value))
+            setattr(fti, key, value)
 
         return value
     return decorator
@@ -84,7 +82,7 @@ class SchemaCache(object):
     You should only use this if you require bare-metal speed. For almost all
     operations, it's safer and easier to do:
 
-        >>> fti = getUtility(IDexterityFTI, name=portal_type)
+        >>> fti = getUtility(IFTI, name=portal_type)
         >>> schema = fti.lookupSchema()
 
     The lookupSchema() call is probably as fast as this cache. However, if
@@ -211,13 +209,13 @@ class SchemaCache(object):
 
     @synchronized(lock)
     def clear(self):
-        for fti in getAllUtilitiesRegisteredFor(IDexterityFTI):
+        for fti in getAllUtilitiesRegisteredFor(IFTI):
             self.invalidate(fti)
 
     @synchronized(lock)
     def invalidate(self, fti):
-        if not IDexterityFTI.providedBy(fti):
-            fti = queryUtility(IDexterityFTI, name=fti)
+        if not IFTI.providedBy(fti):
+            fti = queryUtility(IFTI, name=fti)
         if fti is not None:
             invalidate_cache(fti)
             self.invalidations += 1
@@ -244,4 +242,3 @@ def invalidate_schema(event):
         SCHEMA_CACHE.invalidate(event.portal_type)
     else:
         SCHEMA_CACHE.clear()
-

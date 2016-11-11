@@ -2,17 +2,18 @@
 from datetime import datetime
 from dateutil.tz import tzutc
 from plone.behavior.interfaces import IBehaviorAssignable
-from plone.server.content.interfaces import IDexterityFTI
+from plone.server.content.interfaces import IFTI
 from plone.server.content.schema import SCHEMA_CACHE
 from zope.component import createObject
 from zope.component import getUtility
 from zope.lifecycleevent import ObjectMovedEvent
 from zope.lifecycleevent import ObjectAddedEvent
-from zope.dottedname.resolve import resolve
-from zope.event import notify
 from zope.lifecycleevent import ObjectCreatedEvent
 from zope.lifecycleevent import ObjectModifiedEvent
-from plone.server.content.interfaces import IContainerModifiedEvent
+from zope.lifecycleevent import ObjectRemovedEvent
+from ZODB.interfaces import IBroken
+from zope.dottedname.resolve import resolve
+from zope.event import notify
 from zope.schema.interfaces import IField
 from zope.security.interfaces import Unauthorized
 from zope.interface import implementer
@@ -47,7 +48,7 @@ def uncontained(object, container, name=None):
 
     if oldparent is not container or oldname != name:
         if oldparent is not None or oldname is not None:
-            notifyContainerModified(container)
+            notify(ObjectModifiedEvent(container))
         return
 
     event = ObjectRemovedEvent(object, oldparent, oldname)
@@ -56,7 +57,7 @@ def uncontained(object, container, name=None):
     if not IBroken.providedBy(object):
         object.__parent__ = None
         object.__name__ = None
-    notifyContainerModified(container)
+    notify(ObjectModifiedEvent(container))
 
 
 def mergedTaggedValueDict(schema, name):
@@ -131,14 +132,15 @@ def getAdditionalSchemata(context=None, portal_type=None):
     else:
         behavior_assignable = None
     log.debug('Behavior assignable found for context.')
-    for behavior_reg in behavior_assignable.enumerateBehaviors():
-        form_schema = IFormFieldProvider(behavior_reg.interface, None)
-        if form_schema is not None:
-            yield form_schema
+    if behavior_assignable:
+        for behavior_reg in behavior_assignable.enumerateBehaviors():
+            form_schema = IFormFieldProvider(behavior_reg.interface, None)
+            if form_schema is not None:
+                yield form_schema
 
 
 def createContent(portal_type, **kw):
-    fti = getUtility(IDexterityFTI, name=portal_type)
+    fti = getUtility(IFTI, name=portal_type)
     content = createObject(fti.factory, **kw)
 
     # Note: The factory may have done this already, but we want to be sure
@@ -186,28 +188,26 @@ def addContentToContainer(container, object, request=None, checkConstraints=True
         raise ValueError('object must have its portal_type set')
 
     if checkConstraints:
-        # TODO: Right now we don't have option to allow custom container restrictions
-        # container_fti = container.getTypeInfo()
+        container_fti = container.getTypeInfo()
 
-        fti = getUtility(IDexterityFTI, name=object.portal_type)
+        fti = getUtility(IFTI, name=object.portal_type)
         if not fti.isConstructionAllowed(container, request):
             raise Unauthorized(
                 'Cannot create {0:s}'.format(object.portal_type))
 
-        # TODO 
-        # if container_fti is not None \
-        #    and not container_fti.allowType(object.portal_type):
-        #     raise ValueError(
-        #         'Disallowed subobject type: {0:s}'.format(
-        #             object.portal_type)
-        #     )
+        if container_fti is not None \
+           and not container_fti.allowType(object.portal_type):
+            raise ValueError(
+                'Disallowed subobject type: {0:s}'.format(
+                    object.portal_type)
+            )
 
     name = getattr(object, 'id', None)
     if name is None:
         raise AttributeError()
     # name = INameChooser(container).chooseName(name, object)
     object.id = name
-
+    object.__name__ = name
     container[name] = object
     return container[name]
 
@@ -246,56 +246,24 @@ def all_merged_tagged_values_dict(ifaces, key):
     return info
 
 
-@implementer(IContainerModifiedEvent)
-class ContainerModifiedEvent(ObjectModifiedEvent):
-    """The container has been modified."""
-
-
-def notifyContainerModified(object, *descriptions):
-    """Notify that the container was modified."""
-    notify(ContainerModifiedEvent(object, *descriptions))
-
-
 def containedEvent(object, container, name=None):
 
-    oldparent = object.__parent__
+    if hasattr(object, '__parent__'):
+        oldparent = object.__parent__
+    else:
+        oldparent = None
     oldname = object.__name__
 
-    if oldparent is container and oldname == name:
+    if oldparent is container:
         # No events
         return object, None
 
-    object.__parent__ = container
-    object.__name__ = name
-
-    if oldparent is None or oldname is None:
+    if oldparent is None:
         event = ObjectAddedEvent(object, container, name)
     else:
         event = ObjectMovedEvent(object, oldparent, oldname, container, name)
 
-    return object, event
-
-
-_SENTINEL = object()
-
-
-def setitem(container, setitemf, name, object):
-
-    # Do basic name check:
-    if not name:
-        raise ValueError("empty names are not allowed")
-
-    old = container.get(name, _SENTINEL)
-    if old is object:
-        return
-    if old is not _SENTINEL:
-        raise KeyError(name)
-
-    object, event = containedEvent(object, container, name)
-    setitemf(name, object)
-    if event:
-        notify(event)
-        notifyContainerModified(container)
+    return event
 
 
 def sortedFields(schema):
@@ -308,3 +276,5 @@ def sortedFields(schema):
             fields.append((name, field, ))
     fields.sort(key=lambda item: item[1].order)
     return fields
+
+

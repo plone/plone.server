@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from plone.behavior.interfaces import IBehaviorAssignable
-from plone.server.content.interfaces import IDexterityContent
+from plone.server.content.interfaces import IContent
 from plone.server.content.schema import SCHEMA_CACHE
 from zope.component import adapter
 from zope.interface import implementer
 
 
 @implementer(IBehaviorAssignable)
-@adapter(IDexterityContent)
-class DexterityBehaviorAssignable(object):
+@adapter(IContent)
+class BehaviorAssignable(object):
     """Support plone.behavior behaviors stored in the FTI
     """
 

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from plone.server.content.interfaces import IDexterityContainer
-from plone.server.content.interfaces import IDexterityContent
-from plone.server.content.interfaces import IDexterityFTI
+from plone.server.content.interfaces import IContainer
+from plone.server.content.interfaces import IContent
+from plone.server.content.interfaces import IBigContainer
+from plone.server.content.interfaces import IFTI
 from plone.server.content.utils import iterSchemata
 from plone.server.content.utils import iterSchemataForType
 from plone.jsonserializer.interfaces import IFieldSerializer
@@ -9,11 +10,10 @@ from plone.jsonserializer.interfaces import IFieldsetSerializer
 from plone.jsonserializer.interfaces import ISchemaSerializer
 from plone.jsonserializer.interfaces import ISerializeToJson
 from plone.jsonserializer.interfaces import ISerializeToJsonSummary
-from plone.server.content.interfaces import IDexterityBigContainer
 from plone.jsonserializer.serializer.converters import json_compatible
 from plone.server.browser import get_physical_path
-from plone.server.content.interfaces import FIELDSETS_KEY
-from plone.server.content.interfaces import READ_PERMISSIONS_KEY
+from plone.server.content.directives.interfaces import FIELDSETS_KEY
+from plone.server.content.directives.interfaces import READ_PERMISSIONS_KEY
 from plone.server.content.utils import mergedTaggedValueDict
 from plone.server.content.utils import sortedFields
 from zope.component import adapter
@@ -31,7 +31,7 @@ MAX_ALLOWED = 200
 
 
 @implementer(ISerializeToJson)
-@adapter(IDexterityContent, Interface)
+@adapter(IContent, Interface)
 class SerializeToJson(object):
 
     def __init__(self, context, request):
@@ -94,7 +94,7 @@ class SerializeToJson(object):
 
 
 @implementer(ISerializeToJson)
-@adapter(IDexterityContainer, Interface)
+@adapter(IContainer, Interface)
 class SerializeFolderToJson(SerializeToJson):
 
     def __call__(self):
@@ -118,7 +118,7 @@ class SerializeFolderToJson(SerializeToJson):
 
 
 @implementer(ISerializeToJson)
-@adapter(IDexterityBigContainer, Interface)
+@adapter(IBigContainer, Interface)
 class SerializeBigFolderToJson(SerializeToJson):
 
     def __call__(self):
@@ -143,13 +143,12 @@ class SerializeBigFolderToJson(SerializeToJson):
 
 
 @implementer(ISerializeToJson)
-@adapter(IDexterityFTI, Interface)
+@adapter(IFTI, Interface)
 class SerializeFTIToJson(SerializeToJson):
 
     def __call__(self):
         fti = self.context
         result = {
-            # '@context': 'http://www.w3.org/ns/hydra/context.jsonld',
             'title': fti.id,
             'type': 'object',
             '$schema': 'http://json-schema.org/draft-04/hyper-schema#',

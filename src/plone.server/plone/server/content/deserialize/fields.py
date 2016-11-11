@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plone.server.content.interfaces import IDexterityContent
+from plone.server.content.interfaces import IContent
 from plone.jsonserializer.interfaces import IFieldDeserializer
 from zope.component import adapter
 from zope.interface import implementer
@@ -15,7 +15,7 @@ from zope.schema.interfaces import IFromUnicode
 
 
 @implementer(IFieldDeserializer)
-@adapter(IField, IDexterityContent, Interface)
+@adapter(IField, IContent, Interface)
 class DefaultFieldDeserializer(object):
 
     def __init__(self, field, context, request):

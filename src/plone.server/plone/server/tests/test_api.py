@@ -22,8 +22,6 @@ class FunctionalTestServer(PloneFunctionalTestCase):
         response = json.loads(resp.text)
         self.assertEqual(response['static_file'], ['favicon.ico'])
         self.assertEqual(response['databases'], ['plone'])
-        self.assertTrue('country-flags' in response['static_directory'])
-        self.assertTrue('language-flags' in response['static_directory'])
 
     def test_get_database(self):
         """Get the database object."""
@@ -61,13 +59,13 @@ class FunctionalTestServer(PloneFunctionalTestCase):
         response = json.loads(resp.text)
         self.assertTrue(len(response) >= 10)
         self.assertTrue(
-            'plone.server.registry.ILayers.active_layers' in response)
+            'plone.server.config.ILayers.active_layers' in response)
 
     def test_get_registry(self):
         """Check a value from registry."""
         resp = self.layer.requester(
             'GET',
-            '/plone/plone/@registry/plone.server.registry.ICors.enabled')
+            '/plone/plone/@registry/plone.server.config.ICors.enabled')
         response = json.loads(resp.text)
         self.assertTrue(response[0])
 
@@ -105,7 +103,7 @@ class FunctionalTestServer(PloneFunctionalTestCase):
             'POST',
             '/plone/plone/@registry',
             data=json.dumps({
-                "interface": "plone.server.registry.ICors"
+                "interface": "plone.server.config.ICors"
             })
         )
         self.assertTrue(resp.status_code == 201)
@@ -114,7 +112,7 @@ class FunctionalTestServer(PloneFunctionalTestCase):
         """Try to create a contenttype."""
         resp = self.layer.requester(
             'PATCH',
-            '/plone/plone/@registry/plone.server.registry.ICors.enabled',
+            '/plone/plone/@registry/plone.server.config.ICors.enabled',
             data=json.dumps({
                 "value": False
             })
@@ -122,7 +120,7 @@ class FunctionalTestServer(PloneFunctionalTestCase):
         self.assertTrue(resp.status_code == 204)
         resp = self.layer.requester(
             'GET',
-            '/plone/plone/@registry/plone.server.registry.ICors.enabled')
+            '/plone/plone/@registry/plone.server.config.ICors.enabled')
         response = json.loads(resp.text)
         self.assertFalse(response[0])
 

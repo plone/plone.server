@@ -2,7 +2,7 @@
 from datetime import datetime
 from dateutil.tz import tzlocal
 from dateutil.tz import tzutc
-from plone.server.content.interfaces import IDexterityContent
+from plone.server.content.interfaces import IContent
 from plone.server.content.interfaces import IFormFieldProvider
 from plone.server.behaviors.properties import ContextProperty
 from plone.server.content import model
@@ -32,7 +32,7 @@ class IDublinCore(model.Schema, IWriteZopeDublinCore):
     index(subject='non_analyzed')
 
 
-@adapter(IDexterityContent)
+@adapter(IContent)
 class DublinCore(ZDCAnnotatableAdapter):
 
     creators = ContextProperty(u'creators', ())
