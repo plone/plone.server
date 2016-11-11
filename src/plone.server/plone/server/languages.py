@@ -52,3 +52,4 @@ class FI(DefaultLanguage):
 class ENUS(DefaultLanguage):
     def __init__(self, content):
         self.content = content
+

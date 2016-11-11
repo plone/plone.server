@@ -5,9 +5,6 @@
 
   <include package="zope.component" />
 
-  <include package="plone.registry" />
-  <include package="plone.dexterity" file="meta.zcml" />
-  <include package="plone.dexterity" />
   <include package="zope.annotation" />
   <include package="zope.security" file="meta.zcml"/>
 
@@ -30,6 +27,11 @@
   <adapter factory=".browser.Absolute_URL_ObtainRequest" />
 
   <include file="meta.zcml" />
+
+  <include package=".content" />
+  <include package=".registry" />
+  <include package=".uuid" />
+
   <include file="permissions.zcml" />
   <include file="security.zcml" />
   <include file="content.zcml" />
@@ -44,8 +46,5 @@
   <plone:api file="api/api.json" />
 
   <adapter factory=".summary.DefaultJSONSummarySerializer" />
-
-  <!-- Addons -->
-  <include package="plone.i18n" />
 
 </configure>

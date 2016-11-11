@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-from plone.dexterity.content import Container
-from plone.dexterity.content import BTreeContainer
-from plone.registry import Registry
-from plone.registry.interfaces import IRegistry
+from plone.server.content.base import OrderedContainer
+from plone.server.content.base import BTreeContainer
+from plone.server.registry import Registry
+from plone.server.registry.interfaces import IRegistry
 from plone.server.browser import get_physical_path
 from plone.server.interfaces import IItem
 from plone.server.interfaces import IFolder
 from plone.server.interfaces import IPloneSite
 from plone.server.interfaces import IStaticDirectory
 from plone.server.interfaces import IStaticFile
-from plone.server.registry import IAddons
-from plone.server.registry import IAuthExtractionPlugins
-from plone.server.registry import IAuthPloneUserPlugins
-from plone.server.registry import ICors
-from plone.server.registry import ILayers
+from plone.server.config import IAddons
+from plone.server.config import IAuthExtractionPlugins
+from plone.server.config import IAuthPloneUserPlugins
+from plone.server.config import ICors
+from plone.server.config import ILayers
 from zope.component.persistentregistry import PersistentComponents
 from zope.interface import implementer
 from zope.securitypolicy.interfaces import IPrincipalRoleManager
@@ -21,7 +21,7 @@ from zope.securitypolicy.principalpermission import PrincipalPermissionManager
 
 
 @implementer(IPloneSite)
-class PloneSite(Container):
+class PloneSite(OrderedContainer):
 
     def __init__(self, *args, **kwargs):
         super(PloneSite, self).__init__(*args, **kwargs)
@@ -72,7 +72,7 @@ class PloneSite(Container):
 
 
 @implementer(IItem)
-class Item(Container):
+class Item(OrderedContainer):
 
     def __repr__(self):
         path = '/'.join(get_physical_path(self))

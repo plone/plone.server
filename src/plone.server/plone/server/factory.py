@@ -8,9 +8,9 @@ from plone.server import DICT_RENDERS
 from plone.server import jose
 from plone.server.async import IAsyncUtility
 from plone.server.auth.participation import RootParticipation
-from plone.server.content import IStaticDirectory
-from plone.server.content import IStaticFile
-from plone.server.content import StaticFile
+from plone.server.types import IStaticDirectory
+from plone.server.types import IStaticFile
+from plone.server.types import StaticFile
 from plone.server.contentnegotiation import ContentNegotiatorUtility
 from plone.server.interfaces import IApplication
 from plone.server.interfaces import IContentNegotiation

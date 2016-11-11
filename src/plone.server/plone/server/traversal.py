@@ -5,10 +5,10 @@ from aiohttp.abc import AbstractRouter
 from aiohttp.web_exceptions import HTTPBadRequest
 from aiohttp.web_exceptions import HTTPNotFound
 from aiohttp.web_exceptions import HTTPUnauthorized
-from plone.registry.interfaces import IRegistry
+from plone.server.registry.interfaces import IRegistry
 from plone.server import _
 from plone.server import DICT_METHODS
-from plone.server.api.dexterity import DefaultOPTIONS
+from plone.server.api.content import DefaultOPTIONS
 from plone.server.api.layer import IDefaultLayer
 from plone.server.auth.participation import AnonymousParticipation
 from plone.server.browser import ErrorResponse
@@ -23,8 +23,8 @@ from plone.server.interfaces import IRendered
 from plone.server.interfaces import IRequest
 from plone.server.interfaces import ITranslated
 from plone.server.interfaces import ITraversableView
-from plone.server.registry import ACTIVE_LAYERS_KEY
-from plone.server.registry import CORS_KEY
+from plone.server.config import ACTIVE_LAYERS_KEY
+from plone.server.config import CORS_KEY
 from plone.server.transactions import locked
 from plone.server.transactions import sync
 from plone.server.utils import apply_cors

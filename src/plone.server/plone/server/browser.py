@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plone.dexterity.interfaces import IDexterityContent
+from plone.server.content.interfaces import IContent
 from plone.server.interfaces import IAbsoluteURL
 from plone.server.interfaces import IRequest
 from plone.server.interfaces import IView
@@ -19,7 +19,7 @@ def get_physical_path(context):
     return reversed(parts)
 
 
-@adapter(IDexterityContent, IRequest)
+@adapter(IContent, IRequest)
 @implementer(IView, ILocation)
 class View(object):
 
@@ -40,7 +40,7 @@ class View(object):
         }
 
 
-@adapter(IDexterityContent, IRequest)
+@adapter(IContent, IRequest)
 @implementer(IAbsoluteURL)
 class Absolute_URL(object):
 
@@ -66,7 +66,7 @@ class Absolute_URL(object):
                 self.request._db_id + path
 
 
-@adapter(IDexterityContent)
+@adapter(IContent)
 @implementer(IAbsoluteURL)
 class Absolute_URL_ObtainRequest(Absolute_URL):
 

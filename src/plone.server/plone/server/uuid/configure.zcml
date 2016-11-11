@@ -1,0 +1,16 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    i18n_domain="plone.server">
+
+    <include package="zope.component" file="meta.zcml" />
+    <include package="zope.component" />
+
+    <adapter factory=".adapter.attributeUUID" />
+    <adapter factory=".adapter.MutableAttributeUUID" />
+    <utility factory=".generator.UUID1Generator" />
+    <subscriber handler=".handlers.addAttributeUUID" />
+
+</configure>

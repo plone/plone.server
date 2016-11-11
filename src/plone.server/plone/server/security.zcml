@@ -136,14 +136,14 @@
     />
 
   <adapter
-    factory=".content.StaticFileSpecialPermissions"
+    factory=".types.StaticFileSpecialPermissions"
     provides="zope.securitypolicy.interfaces.IPrincipalPermissionManager"
     for="plone.server.interfaces.IStaticFile"
     trusted="true"
     />
 
   <adapter
-    factory=".content.StaticFileSpecialPermissions"
+    factory=".types.StaticFileSpecialPermissions"
     provides="zope.securitypolicy.interfaces.IPrincipalPermissionManager"
     for="plone.server.interfaces.IStaticDirectory"
     trusted="true"

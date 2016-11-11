@@ -6,22 +6,21 @@
   <plone:contenttype
       portal_type="Plone Site"
       schema=".interfaces.IPloneSite"
-      class=".content.PloneSite"
+      class=".types.PloneSite"
       behaviors=""
       />
 
-
   <plone:contenttype
       portal_type="Item"
-      schema=".content.IItem"
-      class=".content.Item"
+      schema=".types.IItem"
+      class=".types.Item"
       behaviors=".behaviors.dublincore.IDublinCore"
     />
 
   <plone:contenttype
       portal_type="Folder"
-      schema=".content.IFolder"
-      class=".content.Folder"
+      schema=".types.IFolder"
+      class=".types.Folder"
     />
 
    <adapter

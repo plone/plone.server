@@ -3,7 +3,7 @@ from plone.server import _
 from plone.server import AVAILABLE_ADDONS
 from plone.server.api.service import Service
 from plone.server.browser import ErrorResponse
-from plone.server.registry import IAddons
+from plone.server.config import IAddons
 
 
 class Install(Service):

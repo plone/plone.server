@@ -3,6 +3,8 @@
     xmlns:zcml="http://namespaces.zope.org/zcml"
     xmlns:plone="http://namespaces.plone.org/plone">
 
+
+
   <!-- create and remove index -->
   <subscriber
       for="plone.server.interfaces.IPloneSite
@@ -17,15 +19,15 @@
 
   <!-- index events -->
   <subscriber
-      for="plone.dexterity.interfaces.IDexterityContent
+      for="plone.server.content.interfaces.IContent
            zope.lifecycleevent.interfaces.IObjectAddedEvent"
       handler=".index.add_object" />
   <subscriber
-    for="plone.dexterity.interfaces.IDexterityContent
+    for="plone.server.content.interfaces.IContent
          zope.lifecycleevent.interfaces.IObjectCopiedEvent"
     handler=".index.add_object" />
   <subscriber
-    for="plone.dexterity.interfaces.IDexterityContent
+    for="plone.server.content.interfaces.IContent
          zope.lifecycleevent.interfaces.IObjectModifiedEvent"
     handler=".index.add_object" />
   <!-- will need workflow events as well -->
@@ -33,7 +35,7 @@
 
   <!-- unindex events -->
   <subscriber
-    for="plone.dexterity.interfaces.IDexterityContent
+    for="plone.server.content.interfaces.IContent
          zope.lifecycleevent.interfaces.IObjectRemovedEvent"
     handler=".index.remove_object" />
 
@@ -41,6 +43,6 @@
   <!-- default catalog data adapter -->
   <adapter factory=".catalog.DefaultCatalogDataAdapter"
            provides=".interfaces.ICatalogDataAdapter"
-           for="plone.dexterity.interfaces.IDexterityContent" />
+           for="plone.server.content.interfaces.IContent" />
 
 </configure>

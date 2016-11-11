@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from plone.supermodel import model
+from plone.server.content import model
 from zope import schema
 from zope.component.interfaces import ISite
 from zope.i18nmessageid.message import MessageFactory
@@ -7,6 +7,7 @@ from zope.interface import Attribute
 from zope.interface import Interface
 from zope.interface import interfaces
 from zope.schema.interfaces import IObject
+from zope.schema import Set
 
 
 _ = MessageFactory('plone.server')
@@ -326,6 +327,40 @@ class ITransformer(Interface):
         Return a unicode string. Raises TransformError if something went
         wrong.
         """
+
+
+class INameChooser(Interface):
+
+    def checkName(name, object):
+        """Check whether an object name is valid.
+
+        Raises a user error if the name is not valid.
+        """
+
+    def chooseName(name, object):
+        """Choose a unique valid name for the object.
+
+        The given name and object may be taken into account when
+        choosing the name.
+
+        chooseName is expected to always choose a valid name (that would pass
+        the checkName test) and never raise an error.
+
+        """
+
+
+class IReservedNames(Interface):
+    """A sequence of names that are reserved for that container."""
+
+    reservedNames = Set(
+        title=_(u'Reserved Names'),
+        description=_(u'Names that are not allowed for addable content'),
+        required=True,
+    )
+
+
+class NameReserved(ValueError):
+    __doc__ = _("""The name is reserved for this container""")
 
 
 # Specific Events

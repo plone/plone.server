@@ -1,4 +1,4 @@
-from plone.dexterity.interfaces import IDexterityFTI
+from plone.server.content.interfaces import IFTI
 from plone.jsonserializer.interfaces import ISerializeToJson
 from plone.server.interfaces import IRequest
 from plone.server.renderers import IFrameFormatsJson
@@ -18,7 +18,7 @@ class Framing(object):
     def __call__(self, json_value):
         if self.request.resource:
             fti = queryUtility(
-                IDexterityFTI, name=self.request.resource.portal_type)
+                IFTI, name=self.request.resource.portal_type)
             schema_summary = getMultiAdapter(
                 (fti, self.request), ISerializeToJson)()
             json_value['schema'] = schema_summary
