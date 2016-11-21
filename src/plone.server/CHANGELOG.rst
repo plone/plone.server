@@ -1,7 +1,7 @@
 1.0a7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Test ignore.
 
 
 1.0a6 (2016-11-21)
