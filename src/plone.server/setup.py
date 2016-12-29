@@ -64,7 +64,8 @@ setup(
         'zope.security',
         'zope.securitypolicy',
         'pyjwt',
-        'requests'
+        'requests',
+        'hjson'
     ],
     extras_require={
         'test': [
@@ -79,7 +80,8 @@ setup(
             'pcli = plone.server.commands.cli:CliCommand',
             'pshell = plone.server.commands.shell:ShellCommand',
             'pmigrate = plone.server.commands.migrate:MigrateCommand',
-            'pcreate = plone.server.commands.create:CreateCommand'
+            'pcreate = plone.server.commands.create:CreateCommand',
+            'zcml2hjson = plone.server.commands.zcmltojson:ZCML2HJSONCommand',
         ]
     }
 )

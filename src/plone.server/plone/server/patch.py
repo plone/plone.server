@@ -1,13 +1,15 @@
-from zope.interface.adapter import BaseAdapterRegistry
-from zope.interface.adapter import AdapterLookupBase
-from zope.interface import providedBy
-
-from transaction._transaction import Status
-from transaction._transaction import Transaction
+from plone.server import configuration
 from transaction import interfaces
 from transaction._compat import reraise
+from transaction._transaction import Status
+from transaction._transaction import Transaction
+from zope.configuration import xmlconfig
+from zope.interface import providedBy
+from zope.interface.adapter import AdapterLookupBase
+from zope.interface.adapter import BaseAdapterRegistry
 
 import asyncio
+import os
 import sys
 
 
@@ -136,3 +138,27 @@ async def _acallAfterCommitHooks(self, status=True):
 Transaction._acallBeforeCommitHooks = _acallBeforeCommitHooks
 Transaction.acommit = acommit
 Transaction._acallAfterCommitHooks = _acallAfterCommitHooks
+
+
+original_xmlconfig_processxmlfile = xmlconfig.processxmlfile
+original_xmlconfig_include = xmlconfig.include
+
+
+def xmlconfig_processxmlfile(file, context, testing=False):
+    # patch to allow parsing json and hjson files
+    if getattr(file, 'name', '<string>').lower().endswith('.hjson'):
+        file = configuration.convert_json_to_zcml(file)
+    return original_xmlconfig_processxmlfile(file, context, testing)
+xmlconfig.processxmlfile = xmlconfig_processxmlfile
+
+
+def xmlconfig_include(_context, file=None, package=None, files=None):
+    if file is None and package is not None:
+        package_dir = os.path.dirname(package.__file__)
+        for filetype in ('.hjson', '.json', '.zcml'):
+            filename = 'configure' + filetype
+            if os.path.exists(os.path.join(package_dir, filename)):
+                file = filename
+                break
+    return original_xmlconfig_include(_context, file, package, files)
+xmlconfig.include = xmlconfig_include

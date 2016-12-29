@@ -1,0 +1,41 @@
+{
+  configuration: [{
+    include: {
+      file: meta.zcml
+      package: plone.server
+    }
+    "plone:contenttype": [{
+      schema: .interfaces.ISite
+      behaviors: ""
+      portal_type: Site
+      class: .content.Site
+    }, {
+      schema: .content.IItem
+      behaviors: .behaviors.dublincore.IDublinCore
+      portal_type: Item
+      class: .content.Item
+    }, {
+      schema: .content.IContainer
+      portal_type: Folder
+      class: .content.Folder
+    }]
+    adapter: [{
+        factory: plone.server.factory.DatabaseToJson
+        provides: plone.server.json.interfaces.IResourceSerializeToJson
+        for: [
+          plone.server.interfaces.IDatabase
+          plone.server.interfaces.IRequest
+        ]
+      }, {
+        factory: plone.server.factory.ApplicationToJson
+        provides: plone.server.json.interfaces.IResourceSerializeToJson
+        for: [
+          plone.server.interfaces.IApplication
+          plone.server.interfaces.IRequest
+        ]
+      }, {
+        factory: plone.server.content.BehaviorAssignable
+      }
+    ]
+  }]
+}

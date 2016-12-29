@@ -1,0 +1,60 @@
+{
+  configuration: [{
+    include: [
+      { package: "zope.component"}
+      { package: "zope.annotation"}
+      { package: "plone.behavior", file: "meta.zcml"}
+      { package: "zope.security", file: "meta.zcml" }
+    ]
+  }, {
+    adapter: [
+
+      # language adapters...
+      { factory: ".languages.EN" }
+      { factory: ".languages.CA" }
+      { factory: ".languages.FI" }
+      { factory: ".languages.ENUS" }
+
+      { factory: ".translation.GenericTranslation"}
+
+      { factory: ".renderers.RendererFormatJson"}
+      { factory: ".renderers.RendererFormatHtml"}
+      { factory: ".renderers.RendererFormatRaw"}
+      { factory: ".renderers.Renderer"}
+      { factory: ".renderers.RendererJson"}
+      { factory: ".renderers.RendererHtml"}
+      { factory: ".renderers.RendererRaw"}
+
+      { factory: ".browser.Absolute_URL"}
+      { factory: ".browser.Absolute_URL_ObtainRequest"}
+
+      { factory: "plone.server.types.FTIConstrainAllowedTypes"}
+    ],
+    include: [
+      { file: "meta.zcml" }
+      { file: "permissions.zcml" }
+      { file: "security.zcml" }
+
+      { package: ".json" }
+      { package: ".auth" }
+      { package: ".catalog" }
+      { package: ".framing" }
+      { package: ".behaviors" }
+      { package: ".json" }
+
+      { file: "content.hjson" }
+      { file: "basicfile.zcml" }
+      { file: "transform.zcml" }
+    ],
+    subscriber:[{
+      for: [
+        "plone.server.interfaces.IResource"
+        "plone.server.interfaces.IObjectFinallyModifiedEvent"
+      ],
+      handler: ".events.modified_object"
+    }, {
+      handler: ".events.object_event_notify"
+    }],
+    "plone:api": { file: "api/api.json" }
+  }]
+}

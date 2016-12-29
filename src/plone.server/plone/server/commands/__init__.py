@@ -4,6 +4,7 @@ from plone.server.testing import FakeRequest
 from plone.server.testing import TestParticipation
 
 import argparse
+import hjson
 import json
 import logging
 import os
@@ -40,14 +41,7 @@ class Command(object):
         parser = self.get_parser()
         arguments = parser.parse_args()
 
-        if os.path.exists(arguments.configuration):
-            with open(arguments.configuration, 'r') as config:
-                settings = json.load(config)
-        else:
-            logger.warn('Could not find the configuration file {}. Using default settings.'.format(
-                arguments.configuration
-            ))
-            settings = MISSING_SETTINGS.copy()
+        settings = self.get_configuration(arguments.configuration)
 
         app = self.make_app(settings)
 
@@ -65,13 +59,33 @@ class Command(object):
 
         self.run(arguments, settings, app)
 
+    def get_configuration(self, configuration_file):
+        if not configuration_file:
+            if os.path.exists('config.hjson'):
+                configuration_file = 'config.hjson'
+            elif os.path.exists('config.json'):
+                configuration_file = 'config.json'
+
+        if os.path.exists(configuration_file):
+            with open(configuration_file, 'r') as config:
+                if configuration_file.endswith('.hjson'):
+                    settings = hjson.load(config)
+                else:
+                    settings = json.load(config)
+        else:
+            logger.warn('Could not find the configuration file {}. Using default settings.'.format(
+                configuration_file or 'config.h?json'
+            ))
+            settings = MISSING_SETTINGS.copy()
+
+        return settings
+
     def make_app(self, settings):
         return make_app(settings=settings)
 
     def get_parser(self):
         parser = argparse.ArgumentParser(description=self.description)
-        parser.add_argument('-c', '--configuration',
-                            default='config.json', help='Configuration file')
+        parser.add_argument('-c', '--configuration', help='Configuration file')
         parser.add_argument('--debug', dest='debug', action='store_true',
                             help='Log verbose')
         parser.set_defaults(debug=False)
