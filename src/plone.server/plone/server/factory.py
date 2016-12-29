@@ -284,7 +284,7 @@ def make_app(config_file=None, settings=None):
     elif settings is None:
         raise Exception('Neither configuration or settings')
 
-    include(app.config, 'configure.zcml', sys.modules['plone.server'])
+    include(app.config, 'configure.hjson', sys.modules['plone.server'])
     for ep in iter_entry_points('plone.server'):
         # auto-include applications
         # What an "app" include consists of...

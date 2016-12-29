@@ -1,6 +1,9 @@
 1.0a9 (unreleased)
 ------------------
 
+- Convert all ZCML to HJSON and support hjson for configuration
+  [vangheem]
+
 - Add new pcreate command
   [vangheem]
 
