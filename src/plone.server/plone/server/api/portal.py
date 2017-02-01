@@ -12,7 +12,7 @@ from plone.server.interfaces import ISite
 from plone.server.interfaces import IResourceSerializeToJson
 from plone.server.utils import get_authenticated_user_id
 from zope.component import getMultiAdapter
-from zope.securitypolicy.interfaces import IPrincipalRoleManager
+from plone.server.interfaces import IPrincipalRoleManager
 
 
 @configure.service(context=IDatabase, method='GET', permission='plone.GetPortals')

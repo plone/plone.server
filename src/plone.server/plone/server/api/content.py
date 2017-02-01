@@ -29,11 +29,11 @@ from plone.server.utils import iter_parents
 from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
 
-from zope.securitypolicy.interfaces import IPrincipalPermissionMap
-from zope.securitypolicy.interfaces import IPrincipalRoleManager
-from zope.securitypolicy.interfaces import IRolePermissionManager
-from zope.securitypolicy.interfaces import IPrincipalRoleMap
-from zope.securitypolicy.interfaces import IRolePermissionMap
+from plone.server.interfaces import IPrincipalPermissionMap
+from plone.server.interfaces import IPrincipalRoleManager
+from plone.server.interfaces import IRolePermissionManager
+from plone.server.interfaces import IPrincipalRoleMap
+from plone.server.interfaces import IRolePermissionMap
 
 
 _zone = tzlocal()

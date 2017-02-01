@@ -3,8 +3,8 @@ from plone.server.auth.users import ANONYMOUS_USER_ID
 from plone.server.auth.users import ROOT_USER_ID
 from plone.server.interfaces import IApplication
 from plone.server.interfaces import IDatabase
-from zope.securitypolicy.interfaces import IPrincipalPermissionManager
-from zope.securitypolicy.principalpermission import PrincipalPermissionManager
+from plone.server.interfaces import IPrincipalPermissionManager
+from plone.server.auth.security_code import PrincipalPermissionManager
 
 
 @configure.adapter(for_=IDatabase, provides=IPrincipalPermissionManager, trusted=True)

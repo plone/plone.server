@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 from plone.server import configure
 from plone.server.interfaces import ISite
-from zope.authentication.interfaces import IAuthentication
+from plone.server.interfaces import IGroups
 from zope.component import getUtility
 
 
@@ -20,7 +20,7 @@ async def get_user_info(self):
         }
         groups.update(participation.principal._groups)
 
-    group_search = getUtility(IAuthentication)
+    group_search = getUtility(IGroups)
     result['groups'] = {}
     for group in groups:
         group_object = group_search.getPrincipal(group)
@@ -31,3 +31,4 @@ async def get_user_info(self):
         }
 
     return result
+

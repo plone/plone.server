@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from plone.server.directives import index
 from plone.server.interfaces import IResource
-from plone.server.security import get_principals_with_access_content
-from plone.server.security import get_roles_with_access_content
+from plone.server.auth import get_principals_with_access_content
+from plone.server.auth import get_roles_with_access_content
 from plone.server.utils import get_content_path
 from plone.server.utils import get_content_depth
-from zope.securitypolicy.rolepermission import rolePermissionManager
-from zope.securitypolicy.settings import Allow
-from zope.securitypolicy.settings import Deny
+from plone.server.auth import rolePermissionManager
+from plone.server.interfaces import Allow
+from plone.server.interfaces import Deny
 
 
 global_roles_for_permission = rolePermissionManager.getRolesForPermission

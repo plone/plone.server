@@ -3,6 +3,7 @@ from plone.server import metaconfigure
 from plone.server.interfaces import DEFAULT_ADD_PERMISSION
 from plone.server.interfaces import IDefaultLayer
 from plone.server.interfaces import IResourceFactory
+from plone.server.interfaces import IRole
 from plone.server.utils import caller_module
 from plone.server.utils import dotted_name
 from plone.server.utils import resolve_module_path
@@ -11,11 +12,18 @@ from zope.component import zcml
 from zope.interface import classImplements
 from zope.interface import Interface
 from zope.configuration import xmlconfig
+from zope.configuration.exceptions import ConfigurationError
 
 import plone.behavior.metaconfigure
 import zope.security.zcml
-import zope.securitypolicy.metaconfigure
-
+from zope.component.zcml import utility
+from plone.server.auth.role import Role
+from plone.server.auth import \
+    rolePermissionManager as role_perm_mgr
+from plone.server.auth import \
+    principalPermissionManager as principal_perm_mgr
+from plone.server.auth import \
+    principalRoleManager as principal_role_mgr
 
 _registered_configurations = []
 # stored as tuple of (type, configuration) so we get keep it in the order
@@ -205,17 +213,17 @@ register_configuration_handler('permission', load_permission)
 
 
 def load_role(_context, role):
-    zope.securitypolicy.metaconfigure.defineRole(_context, **role['config'])
+    defineRole_directive(_context, **role['config'])
 register_configuration_handler('role', load_role)
 
 
 def load_grant(_context, grant):
-    zope.securitypolicy.metaconfigure.grant(_context, **grant['config'])
+    grant_directive(_context, **grant['config'])
 register_configuration_handler('grant', load_grant)
 
 
 def load_grant_all(_context, grant_all):
-    zope.securitypolicy.metaconfigure.grantAll(_context, **grant_all['config'])
+    grantAll_directive(_context, **grant_all['config'])
 register_configuration_handler('grant_all', load_grant_all)
 
 
@@ -335,6 +343,79 @@ def grant_all(principal=None, role=None):
             principal=principal,
             role=role),
         'grant_all')
+
+
+def grant_directive(
+        _context, principal=None, role=None, permission=None,
+        permissions=None):
+    nspecified = ((principal is not None)
+                  + (role is not None)
+                  + (permission is not None)
+                  + (permissions is not None))
+    permspecified = ((permission is not None)
+                     + (permissions is not None))
+
+    if nspecified != 2 or permspecified == 2:
+        raise ConfigurationError(
+            "Exactly two of the principal, role, and permission resp. "
+            "permissions attributes must be specified")
+
+    if permission:
+        permissions = [permission]
+
+    if principal and role:
+        _context.action(
+            discriminator=('grantRoleToPrincipal', role, principal),
+            callable=principal_role_mgr.assignRoleToPrincipal,
+            args=(role, principal),
+        )
+    elif principal and permissions:
+        for permission in permissions:
+            _context.action(
+                discriminator=('grantPermissionToPrincipal',
+                               permission,
+                               principal),
+                callable=principal_perm_mgr.grantPermissionToPrincipal,
+                args=(permission, principal),
+            )
+    elif role and permissions:
+        for permission in permissions:
+            _context.action(
+                discriminator=('grantPermissionToRole', permission, role),
+                callable=role_perm_mgr.grantPermissionToRole,
+                args=(permission, role),
+            )
+
+
+def grantAll_directive(_context, principal=None, role=None):
+    """Grant all permissions to a role or principal
+    """
+    nspecified = ((principal is not None)
+                  + (role is not None))
+
+    if nspecified != 1:
+        raise ConfigurationError(
+            "Exactly one of the principal and role attributes "
+            "must be specified")
+
+    if principal:
+        _context.action(
+            discriminator=('grantAllPermissionsToPrincipal',
+                           principal),
+            callable=principal_perm_mgr.grantAllPermissionsToPrincipal,
+            args=(principal, ),
+        )
+    else:
+        _context.action(
+            discriminator=('grantAllPermissionsToRole', role),
+            callable=role_perm_mgr.grantAllPermissionsToRole,
+            args=(role, ),
+        )
+
+
+def defineRole_directive(_context, id, title, description=''):
+    role = Role(id, title, description)
+    utility(_context, IRole, role, name=id)
 
 
 def include(package, file=None):

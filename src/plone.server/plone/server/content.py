@@ -15,7 +15,7 @@ from plone.server import PERMISSIONS_CACHE
 from plone.server import SCHEMA_CACHE
 from plone.server.auth.users import ANONYMOUS_USER_ID
 from plone.server.auth.users import ROOT_USER_ID
-from zope.securitypolicy.interfaces import IPrincipalPermissionManager
+from plone.server.auth.security_code import PrincipalPermissionManager
 from plone.server.browser import get_physical_path
 from plone.server.exceptions import ConflictIdOnContainer
 from plone.server.exceptions import NoPermissionToAdd
@@ -24,6 +24,8 @@ from plone.server.interfaces import DEFAULT_ADD_PERMISSION
 from plone.server.interfaces import IConstrainTypes
 from plone.server.interfaces import IContainer
 from plone.server.interfaces import IItem
+from plone.server.interfaces import IPrincipalRoleManager
+from plone.server.interfaces import IPrincipalPermissionManager
 from plone.server.interfaces import IResource
 from plone.server.interfaces import IResourceFactory
 from plone.server.interfaces import ISite
@@ -49,8 +51,6 @@ from zope.lifecycleevent import ObjectAddedEvent
 from zope.lifecycleevent import ObjectRemovedEvent
 from zope.schema.interfaces import IContextAwareDefaultFactory
 from zope.security.interfaces import IPermission
-from zope.securitypolicy.interfaces import IPrincipalRoleManager
-from zope.securitypolicy.principalpermission import PrincipalPermissionManager
 
 import uuid
 
@@ -252,6 +252,7 @@ class Resource(Persistent):
     __name__ = None
     __parent__ = None
     __behaviors__ = frozenset({})
+    __acl__ = {}
 
     portal_type = None
     uuid = None

@@ -14,7 +14,7 @@ from plone.server.interfaces import IRequest
 from plone.server.interfaces import IView
 from zope.component import queryAdapter
 from zope.interface.interface import InterfaceClass
-from zope.securitypolicy.settings import PermissionSetting
+from plone.server.interfaces.security import PermissionSetting
 
 import json
 
