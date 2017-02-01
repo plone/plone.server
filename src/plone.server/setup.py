@@ -48,7 +48,6 @@ setup(
         'transaction',
         'ujson',
         'ZODB',
-        'zope.authentication',
         'zope.component',
         'zope.configuration',
         'zope.dottedname',
@@ -62,7 +61,6 @@ setup(
         'zope.proxy',
         'zope.schema',
         'zope.security',
-        'zope.securitypolicy',
         'pyjwt',
         'requests'
     ],

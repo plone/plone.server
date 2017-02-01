@@ -20,21 +20,11 @@ from zope.security.interfaces import ForbiddenAttribute
 from zope.security.interfaces import IChecker
 from zope.security.interfaces import IInteraction
 from zope.security.interfaces import Unauthorized
-from zope.security.management import system_user
 from zope.security.proxy import Proxy
-from zope.security.proxy import removeSecurityProxy
-from zope.securitypolicy.interfaces import Allow
-from zope.securitypolicy.interfaces import Deny
-from zope.securitypolicy.interfaces import IPrincipalPermissionMap
-from zope.securitypolicy.interfaces import IPrincipalRoleMap
-from zope.securitypolicy.interfaces import IRolePermissionMap
-from zope.securitypolicy.interfaces import Unset
-from zope.securitypolicy.principalrole import principalRoleManager
-from zope.securitypolicy.zopepolicy import ZopeSecurityPolicy
-
-
-# load zcml from here...
-configure.include('zope.securitypolicy')
+from plone.server.interfaces import Allow
+from plone.server.interfaces import Deny
+from plone.server.interfaces import Unset
+from plone.server.auth import principalRoleManager
 
 
 globalRolesForPrincipal = principalRoleManager.getRolesForPrincipal
@@ -99,8 +89,9 @@ class ViewPermissionChecker(CheckerPy):
         # Once they have been checked
 
 
-@adapter(IRequest)
-@implementer(IChecker)
+@configure.adapter(
+    for_=IRequest,
+    provides=IChecker)
 class DexterityPermissionChecker(object):
     def __init__(self, request):
         self.request = request
@@ -176,120 +167,3 @@ class DexterityPermissionChecker(object):
         return Proxy(obj, self)
 
 
-@configure.adapter(
-    for_=IRequest,
-    provides=IInteraction)
-def get_current_interaction(request):
-    interaction = getattr(request, 'security', None)
-    if IInteraction.providedBy(interaction):
-        return interaction
-    return Interaction(request)
-
-
-class Interaction(ZopeSecurityPolicy):
-    def __init__(self, request=None):
-        ZopeSecurityPolicy.__init__(self)
-
-        if request is not None:
-            self.request = request
-        else:
-            # Try  magic request lookup if request not given
-            self.request = get_current_request()
-
-    def checkPermission(self, permission, obj):
-        # Always allow public attributes
-        if permission is CheckerPublic:
-            return True
-
-        # Remove implicit security proxy (if used)
-        obj = removeSecurityProxy(obj)
-
-        # Iterate through participations ('principals')
-        # and check permissions they give
-        seen = {}
-        for participation in self.participations:
-            principal = getattr(participation, 'principal', None)
-
-            # Invalid participation (no principal)
-            if principal is None:
-                continue
-
-            # System user always has access
-            if principal is system_user:
-                return True
-
-            # Speed up by skipping seen principals
-            if principal.id in seen:
-                continue
-
-            # Check the permission
-            if self.cached_decision(
-                    obj,
-                    principal.id,
-                    self._groupsFor(principal),
-                    permission):
-                return True
-
-            seen[principal.id] = 1  # mark as seen
-
-        return False
-
-    def cached_principal_roles(self, parent, principal):
-        # Redefine it to get global roles
-        cache = self.cache(parent)
-        try:
-            cache_principal_roles = cache.principal_roles
-        except AttributeError:
-            cache_principal_roles = cache.principal_roles = {}
-        try:
-            return cache_principal_roles[principal]
-        except KeyError:
-            pass
-
-        if parent is None:
-            roles = dict(
-                [(role, SettingAsBoolean[setting])
-                 for (role, setting) in globalRolesForPrincipal(principal)])
-            roles['plone.Anonymous'] = True  # Everybody has Anonymous
-            cache_principal_roles[principal] = roles
-            return roles
-
-        roles = self.cached_principal_roles(
-            removeSecurityProxy(getattr(parent, '__parent__', None)),
-            principal)
-
-        prinrole = IPrincipalRoleMap(parent, None)
-
-        if prinrole:
-            roles = roles.copy()
-            for role, setting in prinrole.getRolesForPrincipal(
-                    principal,
-                    self.request):
-                roles[role] = SettingAsBoolean[setting]
-
-        cache_principal_roles[principal] = roles
-        return roles
-
-
-def get_roles_with_access_content(obj):
-    if obj is None:
-        return {}
-    active_roles = get_roles_with_access_content(
-        removeSecurityProxy(getattr(obj, '__parent__', None)))
-    roleperm = IRolePermissionMap(obj)
-
-    for role, permission in roleperm.getRow('plone.AccessContent'):
-        active_roles[role] = permission
-    return active_roles
-
-
-def get_principals_with_access_content(obj):
-    if obj is None:
-        return {}
-    active_roles = get_principals_with_access_content(
-        removeSecurityProxy(getattr(obj, '__parent__', None)))
-    prinperm = IPrincipalPermissionMap(obj)
-
-    for role, permission in prinperm.getRow('plone.AccessContent'):
-        active_roles[role] = permission
-    return active_roles

@@ -12,8 +12,8 @@ from plone.server.interfaces import IResource
 from plone.server.json.serialize_value import json_compatible
 from zope.component import queryAdapter
 from zope.interface import implementer
-from zope.securitypolicy.principalpermission import principalPermissionManager
-from zope.securitypolicy.rolepermission import rolePermissionManager
+from plone.server.auth import principalPermissionManager
+from plone.server.auth import rolePermissionManager
 
 
 global_principal_permission_setting = principalPermissionManager.getSetting
