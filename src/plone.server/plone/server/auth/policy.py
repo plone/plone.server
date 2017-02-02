@@ -69,6 +69,7 @@ def get_current_interaction(request):
     return Interaction(request)
 
 
+@zope.interface.implementer(IInteraction)
 @zope.interface.provider(ISecurityPolicy)
 class Interaction(object):
 

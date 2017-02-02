@@ -1,5 +1,6 @@
 from zope.security.interfaces import IInteraction
 from plone.server.transactions import get_current_request
+from plone.server.transactions import RequestNotFound
 
 
 class SecurityMap(object):
@@ -37,7 +38,10 @@ class SecurityMap(object):
 
     def _invalidated_interaction_cache(self):
         # Invalidate this threads interaction cache
-        request = get_current_request()
+        try:
+            request = get_current_request()
+        except RequestNotFound:
+            return
         interaction = IInteraction(request)
         if interaction is not None:
             try:

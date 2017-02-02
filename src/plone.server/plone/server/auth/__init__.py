@@ -8,6 +8,7 @@ from plone.server.interfaces import IPrincipalRoleMap
 from plone.server.auth.security_code import principalPermissionManager
 from plone.server.auth.security_code import rolePermissionManager
 from plone.server.auth.security_code import principalRoleManager
+from . import groups
 
 
 async def authenticate_request(request):
