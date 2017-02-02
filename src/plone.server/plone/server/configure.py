@@ -127,14 +127,18 @@ def load_behavior(_context, behavior):
     conf = behavior['config']
     klass = resolve_or_get(behavior['klass'])
     factory = conf.get('factory') or klass
+    real_factory = resolve_or_get(factory)
+    schema = resolve_or_get(conf['provides'])
+    classImplements(real_factory, schema)
+    
     plone.behavior.metaconfigure.behaviorDirective(
         _context,
         conf.get('title', ''),
-        resolve_or_get(conf['provides']),
+        schema,
         name=conf.get('name'),
         description=conf.get('description'),
         marker=resolve_or_get(conf.get('marker')),
-        factory=resolve_or_get(factory),
+        factory=real_factory,
         for_=resolve_or_get(conf.get('for_')),
         name_only=conf.get('name_only')
     )
