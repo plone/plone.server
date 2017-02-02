@@ -3,7 +3,7 @@ from plone.server import configure
 from plone.server.interfaces import IResource
 from plone.server.interfaces import IPrincipalRoleManager
 from plone.server.auth.securitymap import PloneSecurityMap
-from plone.server.interfaces import Allow, Deny, Unset
+from plone.server.interfaces import Allow, Deny, Unset, AllowSingle
 from plone.server.interfaces import IPrincipalPermissionManager
 from plone.server.interfaces import IRolePermissionManager
 
@@ -20,8 +20,11 @@ class PloneRolePermissionManager(PloneSecurityMap):
     # location, but cannot change without breaking existing databases
     key = 'roleperm'
 
-    def grantPermissionToRole(self, permission_id, role_id):
-        PloneSecurityMap.addCell(self, permission_id, role_id, Allow)
+    def grantPermissionToRole(self, permission_id, role_id, inherit=True):
+        if inherit:
+            PloneSecurityMap.addCell(self, permission_id, role_id, Allow)
+        else:
+            PloneSecurityMap.addCell(self, permission_id, role_id, AllowSingle)
 
     def denyPermissionToRole(self, permission_id, role_id):
         PloneSecurityMap.addCell(self, permission_id, role_id, Deny)
@@ -49,8 +52,13 @@ class PlonePrincipalPermissionManager(PloneSecurityMap):
     # we'll keep it as is, to prevent breaking old data:
     key = 'prinperm'
 
-    def grantPermissionToPrincipal(self, permission_id, principal_id):
-        PloneSecurityMap.addCell(self, permission_id, principal_id, Allow)
+    def grantPermissionToPrincipal(
+            self, permission_id, principal_id, inherit=True):
+        if inherit:
+            PloneSecurityMap.addCell(self, permission_id, principal_id, Allow)
+        else:
+            PloneSecurityMap.addCell(
+                self, permission_id, principal_id, AllowSingle)
 
     def denyPermissionToPrincipal(self, permission_id, principal_id):
         PloneSecurityMap.addCell(self, permission_id, principal_id, Deny)
@@ -66,7 +74,6 @@ class PlonePrincipalPermissionManager(PloneSecurityMap):
     getPrincipalsAndPermissions = PloneSecurityMap.getAllCells
 
 
-
 @configure.adapter(
     for_=IResource,
     provides=IPrincipalRoleManager,
@@ -76,8 +83,11 @@ class PlonePrincipalRoleManager(PloneSecurityMap):
 
     key = 'prinrole'
 
-    def assignRoleToPrincipal(self, role_id, principal_id):
-        PloneSecurityMap.addCell(self, role_id, principal_id, Allow)
+    def assignRoleToPrincipal(self, role_id, principal_id, inherit=True):
+        if inherit:
+            PloneSecurityMap.addCell(self, role_id, principal_id, Allow)
+        else:
+            PloneSecurityMap.addCell(self, role_id, principal_id, AllowSingle)
 
     def removeRoleFromPrincipal(self, role_id, principal_id):
         PloneSecurityMap.addCell(self, role_id, principal_id, Deny)
@@ -92,24 +102,6 @@ class PlonePrincipalRoleManager(PloneSecurityMap):
     getPrincipalsAndRoles = PloneSecurityMap.getAllCells
 
     getPrincipalsForRole = PloneSecurityMap.getRow
+    getRolesForPrincipal = PloneSecurityMap.getCol
 
-    def getRolesForPrincipal(self, principal_id, request=None): # noqa
-        """Look for global roles on request security and add global roles."""
-        local_roles = self.getCol(principal_id)
-        global_roles = {}
-        if hasattr(request, 'security'):
-            # We need to check if there is any user information that can give
-            # us global roles
-            for participation in request.security.participations:
-                if participation.principal is not None and \
-                   principal_id == participation.principal.id:
-                    global_roles = participation.principal._roles.copy()
-            if hasattr(request, '_cache_groups'):
-                for id_group, group in request._cache_groups.items():
-                    if id_group == principal_id:
-                        global_roles = group._roles.copy()
-        if local_roles:
-            global_roles.update(local_roles)
-        roles = global_roles
-        return [(key, value) for key, value in roles.items()]
 

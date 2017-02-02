@@ -18,27 +18,41 @@ import zope.interface
 
 from zope.security.checker import CheckerPublic
 from zope.security.management import system_user
-from zope.security.simplepolicies import ParanoidSecurityPolicy
 from zope.security.interfaces import ISecurityPolicy
 from zope.security.interfaces import IInteraction
 from zope.security.proxy import removeSecurityProxy
 from plone.server.auth import principalPermissionManager
 from plone.server.auth import rolePermissionManager
 from plone.server.auth import principalRoleManager
-from plone.server.interfaces import Allow, Deny, Unset
+from plone.server.interfaces import Allow, Deny, Unset, AllowSingle
 from plone.server.interfaces import IRolePermissionMap
 from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleMap
 from plone.server.interfaces import IRequest
-from plone.server.auth.groups import PloneGroup
+from plone.server.interfaces import IGroups
+from zope.component import getUtility
 from plone.server.transactions import get_current_request
 from plone.server import configure
 
 
-SettingAsBoolean = {Allow: True, Deny: False, Unset: None, None: None}
 codePrincipalPermissionSetting = principalPermissionManager.getSetting
 codeRolesForPermission = rolePermissionManager.getRolesForPermission
 codeRolesForPrincipal = principalRoleManager.getRolesForPrincipal
+
+
+SettingAsBoolean = {
+        Allow: True,
+        Deny: False,
+        Unset: None,
+        AllowSingle: 'o',
+        None: None
+    }
+
+
+def levelSettingAsBoolean(level, value):
+    # We want to check if its allow
+    let = SettingAsBoolean[value]
+    return let == level if type(let) is str else let
 
 
 class CacheEntry:
@@ -56,9 +70,10 @@ def get_current_interaction(request):
 
 
 @zope.interface.provider(ISecurityPolicy)
-class Interaction(ParanoidSecurityPolicy):
+class Interaction(object):
+
     def __init__(self, request=None):
-        ParanoidSecurityPolicy.__init__(self)
+        self.participations = []
         self._cache = {}
 
         if request is not None:
@@ -66,6 +81,20 @@ class Interaction(ParanoidSecurityPolicy):
         else:
             # Try  magic request lookup if request not given
             self.request = get_current_request()
+
+    def add(self, participation):
+        if participation.interaction is not None:
+            raise ValueError("%r already belongs to an interaction"
+                             % participation)
+        participation.interaction = self
+        self.participations.append(participation)
+
+    def remove(self, participation):
+        if participation.interaction is not self:
+            raise ValueError("%r does not belong to this interaction"
+                             % participation)
+        self.participations.remove(participation)
+        participation.interaction = None
 
     def invalidate_cache(self):
         self._cache = {}
@@ -108,42 +137,6 @@ class Interaction(ParanoidSecurityPolicy):
 
         return False
 
-    def cached_principal_roles(self, parent, principal):
-        # Redefine it to get global roles
-        cache = self.cache(parent)
-        try:
-            cache_principal_roles = cache.principal_roles
-        except AttributeError:
-            cache_principal_roles = cache.principal_roles = {}
-        try:
-            return cache_principal_roles[principal]
-        except KeyError:
-            pass
-
-        if parent is None:
-            roles = dict(
-                [(role, SettingAsBoolean[setting])
-                 for (role, setting) in codeRolesForPrincipal(principal)])
-            roles['plone.Anonymous'] = True  # Everybody has Anonymous
-            cache_principal_roles[principal] = roles
-            return roles
-
-        roles = self.cached_principal_roles(
-            removeSecurityProxy(getattr(parent, '__parent__', None)),
-            principal)
-
-        prinrole = IPrincipalRoleMap(parent, None)
-
-        if prinrole:
-            roles = roles.copy()
-            for role, setting in prinrole.getRolesForPrincipal(
-                    principal,
-                    self.request):
-                roles[role] = SettingAsBoolean[setting]
-
-        cache_principal_roles[principal] = roles
-        return roles
-
     def cache(self, parent):
         cache = self._cache.get(id(parent))
         if cache:
@@ -174,20 +167,25 @@ class Interaction(ParanoidSecurityPolicy):
         # cache_decision_prin[permission] is the cached decision for a
         # principal and permission.
 
-        decision = self.cached_prinper(parent, principal, groups, permission)
+        # Check direct permissions
+        # First recursive function to get the permissions of a principal
+        decision = self.cached_prinper(
+            parent, principal, groups, permission, 'o')
         if (decision is None) and groups:
-            decision = self._group_based_cashed_prinper(parent, principal,
-                                                        groups, permission)
+            # Second get the permissions of the groups on the tree
+            decision = self._group_based_cashed_prinper(
+                parent, principal, groups, permission, 'o')
         if decision is not None:
             cache_decision_prin[permission] = decision
             return decision
 
-        roles = self.cached_roles(parent, permission)
+        # Check Roles permission
+        roles = self.cached_roles(parent, permission, 'o')
         if roles:
-            prin_roles = self.cached_principal_roles(parent, principal)
+            prin_roles = self.cached_principal_roles(parent, principal, 'o')
             if groups:
                 prin_roles = self.cached_principal_roles_w_groups(
-                    parent, principal, groups, prin_roles)
+                    parent, principal, groups, prin_roles, 'o')
             for role, setting in prin_roles.items():
                 if setting and (role in roles):
                     cache_decision_prin[permission] = decision = True
@@ -196,7 +194,7 @@ class Interaction(ParanoidSecurityPolicy):
         cache_decision_prin[permission] = decision = False
         return decision
 
-    def cached_prinper(self, parent, principal, groups, permission):
+    def cached_prinper(self, parent, principal, groups, permission, level):
         # Compute the permission, if any, for the principal.
         cache = self.cache(parent)
         try:
@@ -213,34 +211,89 @@ class Interaction(ParanoidSecurityPolicy):
         except KeyError:
             pass
 
+        # We reached the end of the recursive we check global / local
         if parent is None:
+            # We check the global configuration
+            prinper = self._globalPermissionsFor(permission, principal)
+            if prinper:
+                cache_prin_per[permission] = prinper
+                return prinper
+
+            # If we did not found the permission for the user look at code
             prinper = SettingAsBoolean[
                 codePrincipalPermissionSetting(permission, principal, None)]
             cache_prin_per[permission] = prinper
             return prinper
 
+        # Get the local map of the permissions
+        # As we want to quit as soon as possible we check first locally
         prinper = IPrincipalPermissionMap(parent, None)
         if prinper is not None:
-            prinper = SettingAsBoolean[
-                prinper.getSetting(permission, principal, None)]
+            prinper = levelSettingAsBoolean(
+                level, prinper.getSetting(permission, principal, None))
             if prinper is not None:
                 cache_prin_per[permission] = prinper
                 return prinper
 
+        # Find the permission recursivelly set to a user
         parent = removeSecurityProxy(getattr(parent, '__parent__', None))
-        prinper = self.cached_prinper(parent, principal, groups, permission)
+        prinper = self.cached_prinper(
+            parent, principal, groups, permission, 'p')
         cache_prin_per[permission] = prinper
         return prinper
 
+    def cached_principal_roles(self, parent, principal, level):
+        # Redefine it to get global roles
+        cache = self.cache(parent)
+        try:
+            cache_principal_roles = cache.principal_roles
+        except AttributeError:
+            cache_principal_roles = cache.principal_roles = {}
+        try:
+            return cache_principal_roles[principal]
+        except KeyError:
+            pass
+
+        # We reached the end so we go to see the global ones
+        if parent is None:
+            # Then the code roles
+            roles = dict(
+                [(role, SettingAsBoolean[setting])
+                 for (role, setting) in codeRolesForPrincipal(principal)])
+            roles['plone.Anonymous'] = True  # Everybody has Anonymous
+
+            # First the global roles
+            groles = self._globalRolesFor(principal)
+            roles.update(groles)
+            
+            cache_principal_roles[principal] = roles
+            return roles
+
+        roles = self.cached_principal_roles(
+            removeSecurityProxy(getattr(parent, '__parent__', None)),
+            principal, 'p')
+
+        # We check the local map of roles
+        prinrole = IPrincipalRoleMap(parent, None)
+
+        if prinrole:
+            roles = roles.copy()
+            for role, setting in prinrole.getRolesForPrincipal(
+                    principal):
+                roles[role] = levelSettingAsBoolean(level, setting)
+
+        cache_principal_roles[principal] = roles
+        return roles
+
     def _group_based_cashed_prinper(self, parent, principal, groups,
-                                    permission):
+                                    permission, level):
         denied = False
         for group_id, ggroups in groups:
             decision = self.cached_prinper(parent, group_id, ggroups,
-                                           permission)
+                                           permission, level)
             if (decision is None) and ggroups:
                 decision = self._group_based_cashed_prinper(
-                    parent, group_id, ggroups, permission)
+                    parent, group_id, ggroups, permission, level)
 
             if decision is None:
                 continue
@@ -255,7 +308,7 @@ class Interaction(ParanoidSecurityPolicy):
 
         return None
 
-    def cached_roles(self, parent, permission):
+    def cached_roles(self, parent, permission, level):
         cache = self.cache(parent)
         try:
             cache_roles = cache.roles
@@ -276,12 +329,14 @@ class Interaction(ParanoidSecurityPolicy):
 
         roles = self.cached_roles(
             removeSecurityProxy(getattr(parent, '__parent__', None)),
-            permission)
+            permission, 'p')
         roleper = IRolePermissionMap(parent, None)
         if roleper:
             roles = roles.copy()
             for role, setting in roleper.getRolesForPermission(permission):
                 if setting is Allow:
+                    roles[role] = 1
+                if setting is AllowSingle and level == 'o':
                     roles[role] = 1
                 elif role in roles:
                     del roles[role]
@@ -290,14 +345,14 @@ class Interaction(ParanoidSecurityPolicy):
         return roles
 
     def cached_principal_roles_w_groups(self, parent,
-                                        principal, groups, prin_roles):
+                                        principal, groups, prin_roles, level):
         denied = {}
         allowed = {}
         for group_id, ggroups in groups:
-            group_roles = dict(self.cached_principal_roles(parent, group_id))
+            group_roles = dict(self.cached_principal_roles(parent, group_id, level))
             if ggroups:
                 group_roles = self.cached_principal_roles_w_groups(
-                    parent, group_id, ggroups, group_roles)
+                    parent, group_id, ggroups, group_roles, level)
             for role, setting in group_roles.items():
                 if setting:
                     allowed[role] = setting
@@ -317,12 +372,8 @@ class Interaction(ParanoidSecurityPolicy):
                 continue
             seen.append(group_id)
 
-            request = get_current_request()
-            if not hasattr(request, '_cache_groups'):
-                request._cache_groups = {}
-            if principal not in request._cache_groups.keys():
-                request._cache_groups[principal] = PloneGroup(request, principal)
-            group = request._cache_groups[principal]
+            groups = getUtility(IGroups)
+            group = groups.getPrincipal(principal)
 
             result.append((group_id,
                            self._findGroupsFor(group, seen)))
@@ -343,5 +394,13 @@ class Interaction(ParanoidSecurityPolicy):
 
         return groups
 
+    def _globalRolesFor(self, principal):
+        roles = getattr(principal, 'roles', ())
+        return roles
+
+    def _globalPermissionsFor(self, principal, permission):
+        permissions = getattr(principal, 'permissions', {})
+        setting = permissions.get(permission, None)
+        return setting
 
 

@@ -77,6 +77,9 @@ Allow = PermissionSetting(
 Deny = PermissionSetting(
     'Deny', 'Explicit deny setting for permissions')
 
+AllowSingle = PermissionSetting(
+    'AllowSingle', 'Explicit allow and not inherit permission')
+
 Unset = PermissionSetting(
     'Unset', 'Unset constant that denotes no setting for permission')
 
@@ -144,7 +147,7 @@ class IPrincipalRoleMap(Interface):
 class IPrincipalRoleManager(IPrincipalRoleMap):
     """Management interface for mappings between principals and roles."""
 
-    def assignRoleToPrincipal(role_id, principal_id):
+    def assignRoleToPrincipal(role_id, principal_id, inherit):
         """Assign the role to the principal."""
 
     def removeRoleFromPrincipal(role_id, principal_id):
@@ -197,7 +200,7 @@ class IRolePermissionMap(Interface):
 class IRolePermissionManager(IRolePermissionMap):
     """Management interface for mappings between roles and permissions."""
 
-    def grantPermissionToRole(permission_id, role_id):
+    def grantPermissionToRole(permission_id, role_id, inherit):
         """Bind the permission to the role.
         """
 
@@ -252,7 +255,7 @@ class IPrincipalPermissionMap(Interface):
 class IPrincipalPermissionManager(IPrincipalPermissionMap):
     """Management interface for mappings between principals and permissions."""
 
-    def grantPermissionToPrincipal(permission_id, principal_id):
+    def grantPermissionToPrincipal(permission_id, principal_id, inherit):
         """Assert that the permission is allowed for the principal.
         """
 

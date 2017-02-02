@@ -32,3 +32,4 @@ class PloneParticipation(object):
                     user._roles['plone.Authenticated'] = 1
         else:
             self.principal = getattr(self.request, '_cache_user', None)
+        self.interaction = None
