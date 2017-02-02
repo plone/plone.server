@@ -9,8 +9,9 @@ class RootUser(object):
         self.id = ROOT_USER_ID
         self.password = password
         self.groups = ['Managers']
-        self._roles = {}
-        self._properties = {}
+        self.roles = {}
+        self.properties = {}
+        self.permissions = {}
 
 
 class PloneUser(object):

@@ -76,6 +76,7 @@ class Interaction(object):
     def __init__(self, request=None):
         self.participations = []
         self._cache = {}
+        self.principal = None
 
         if request is not None:
             self.request = request
@@ -126,6 +127,7 @@ class Interaction(object):
             if principal.id in seen:
                 continue
 
+            self.principal = principal
             # Check the permission
             if self.cached_decision(
                     obj,
@@ -374,7 +376,7 @@ class Interaction(object):
             seen.append(group_id)
 
             groups = getUtility(IGroups)
-            group = groups.getPrincipal(principal)
+            group = groups.getPrincipal(group_id)
 
             result.append((group_id,
                            self._findGroupsFor(group, seen)))
@@ -396,12 +398,28 @@ class Interaction(object):
         return groups
 
     def _globalRolesFor(self, principal):
-        roles = getattr(principal, 'roles', ())
-        return roles
+        # check if its the actual user
+        # We may need to have an interface to look for users info
+        roles = {}
+        if self.principal and principal == self.principal.id:
+            roles = self.principal.roles.copy()
+            return roles
+
+        groups = getUtility(IGroups)
+        if groups:
+            group = groups.getPrincipal(principal)
+            return group.roles.copy()
 
     def _globalPermissionsFor(self, principal, permission):
-        permissions = getattr(principal, 'permissions', {})
-        setting = permissions.get(permission, None)
-        return setting
+        permissions = {}
+        if self.principal and principal == self.principal.id:
+            permissions = self.principal.permissions.copy()
+            return permissions
+
+        groups = getUtility(IGroups)
+        if groups:
+            group = groups.getPrincipal(principal)
+            if group:
+                return group.permissions.copy()
 
 
