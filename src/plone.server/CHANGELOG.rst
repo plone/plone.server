@@ -3,6 +3,12 @@
 
 New features:
 
+- Install addons can have the context
+  [ramonnb]
+
+- Merging zope.securitypolicy
+  [ramonnb]
+
 - Adding C optimization for get_current_request
   [ramonnb]
 
