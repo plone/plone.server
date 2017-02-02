@@ -57,8 +57,6 @@ class PrincipalRoleManager(SecurityMap):
 principalRoleManager = PrincipalRoleManager()  # noqa
 
 
-
-
 @implementer(IPrincipalPermissionManager)
 class PrincipalPermissionManager(SecurityMap):
     """Mappings between principals and permissions."""
@@ -108,7 +106,6 @@ class PrincipalPermissionManager(SecurityMap):
 
 # Permissions are our rows, and principals are our columns
 principalPermissionManager = PrincipalPermissionManager()
-
 
 
 @implementer(IRolePermissionManager)

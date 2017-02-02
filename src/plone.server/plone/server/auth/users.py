@@ -20,11 +20,20 @@ class PloneUser(object):
         self.request = request
         self._groups = []
         self._roles = {}
+        self._permissions = {}
         self._properties = {}
 
     @property
     def groups(self):
         return self._groups
+
+    @property
+    def roles(self):
+        return self._roles
+
+    @property
+    def permissions(self):
+        return self._permissions
 
 
 class AnonymousUser(PloneUser):

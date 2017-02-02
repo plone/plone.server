@@ -51,6 +51,7 @@ from zope.lifecycleevent import ObjectAddedEvent
 from zope.lifecycleevent import ObjectRemovedEvent
 from zope.schema.interfaces import IContextAwareDefaultFactory
 from zope.security.interfaces import IPermission
+from zope.security.interfaces import IInteraction
 
 import uuid
 
@@ -189,7 +190,7 @@ def create_content_in_container(container, type_, id_, request=None, **kw):
             request = get_current_request()
 
         if permission is not None and \
-                not request.security.checkPermission(permission.id, container):
+                not IInteraction(request).checkPermission(permission.id, container):
             raise NoPermissionToAdd(str(container), type_)
 
     constrains = IConstrainTypes(container, None)

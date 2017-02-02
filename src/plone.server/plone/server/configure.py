@@ -16,7 +16,6 @@ from zope.configuration.exceptions import ConfigurationError
 
 import plone.behavior.metaconfigure
 import zope.security.zcml
-from zope.component.zcml import utility
 from plone.server.auth.role import Role
 from plone.server.auth import \
     rolePermissionManager as role_perm_mgr
@@ -415,7 +414,7 @@ def grantAll_directive(_context, principal=None, role=None):
 
 def defineRole_directive(_context, id, title, description=''):
     role = Role(id, title, description)
-    utility(_context, IRole, role, name=id)
+    zcml.utility(_context, IRole, role, name=id)
 
 
 def include(package, file=None):

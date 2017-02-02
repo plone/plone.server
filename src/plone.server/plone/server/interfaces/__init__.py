@@ -55,6 +55,7 @@ from .security import IPrincipalPermissionManager  # noqa
 from .security import Allow  # noqa
 from .security import Deny  # noqa
 from .security import Unset  # noqa
+from .security import AllowSingle  # noqa
 from .security import IGroups  # noqa
 from .text import IRichText  # noqa
 from .text import IRichTextValue  # noqa
@@ -134,10 +135,10 @@ class IAbsoluteURL(Interface):
 
 class IAddOn(Interface):
 
-    def install(self, site):
+    def install(cls, site, request):
         pass
 
-    def uninstall(self):
+    def uninstall(cls, site, request):
         pass
 
 
