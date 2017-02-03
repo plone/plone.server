@@ -17,7 +17,10 @@ if pure_python or is_pypy or is_jython:
     ext_modules = []
 else:
     optimization_path = os.path.join('plone', 'server', 'optimizations.c')
-
+    if os.path.exists('buildout.cfg'):
+        optimization_path = os.path.join(
+            'src', 'plone.server', 'plone',
+            'server', 'optimizations.c')
     ext_modules = [
         Extension(
             'plone.server.optimizations',
