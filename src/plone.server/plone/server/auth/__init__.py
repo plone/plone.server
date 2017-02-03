@@ -51,6 +51,7 @@ def get_roles_with_access_content(obj):
 def get_principals_with_access_content(obj):
     if obj is None:
         return {}
+
     active_roles = get_principals_with_access_content(
         removeSecurityProxy(getattr(obj, '__parent__', None)))
     prinperm = IPrincipalPermissionMap(obj)

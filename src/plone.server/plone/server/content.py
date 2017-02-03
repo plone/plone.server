@@ -253,7 +253,7 @@ class Resource(Persistent):
     __name__ = None
     __parent__ = None
     __behaviors__ = frozenset({})
-    __acl__ = {}
+    __acl__ = None
 
     portal_type = None
     uuid = None
@@ -272,6 +272,12 @@ class Resource(Persistent):
             type=self.portal_type,
             path=path,
             mem=id(self))
+
+    @property
+    def acl(self):
+        if self.__acl__ is None:
+            return dict({})
+        return self.__acl__
 
     def set_id(self, id_):
         if id_ is not None:

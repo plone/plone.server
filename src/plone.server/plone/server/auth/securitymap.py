@@ -108,8 +108,7 @@ class PloneSecurityMap(SecurityMap):
 
     def __init__(self, context):
         self.context = context
-
-        map = self.context.__acl__.get(self.key)
+        map = self.context.acl.get(self.key)
         if map is None:
             self._byrow = {}
             self._bycol = {}
@@ -120,6 +119,8 @@ class PloneSecurityMap(SecurityMap):
 
     def _changed(self):
         map = self.map
+        if self.context.__acl__ is None:
+            self.context.__acl__ = dict({})
         if map is None:
             map = SecurityMap()
             map._byrow = self._byrow

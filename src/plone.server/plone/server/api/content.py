@@ -32,6 +32,8 @@ from zope.component import queryMultiAdapter
 from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleManager
 from plone.server.interfaces import IRolePermissionManager
+from plone.server.interfaces import IPrincipalPermissionManager
+from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleMap
 from plone.server.interfaces import IRolePermissionMap
 
@@ -203,13 +205,21 @@ async def sharing_post(context, request):
     data = await request.json()
     roleperm = IRolePermissionManager(context)
     prinrole = IPrincipalRoleManager(context)
-    if 'prinrole' not in data and 'roleperm' not in data:
+    prinperm = IPrincipalPermissionManager(context)
+    if 'prinrole' not in data and \
+            'roleperm' not in data and \
+            'prinperm' not in data:
         raise AttributeError('prinrole or roleperm missing')
 
     if 'prinrole' in data:
         for user, roles in data['prinrole'].items():
             for role in roles:
                 prinrole.assign_role_to_principal(role, user)
+
+    if 'prinperm' in data:
+        for user, permissions in data['prinperm'].items():
+            for permission in permissions:
+                prinperm.grant_permission_to_principal(permission, user)
 
     if 'roleperm' in data:
         for role, perms in data['roleperm'].items():
