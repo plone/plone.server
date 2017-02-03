@@ -38,7 +38,7 @@ class ApplicationToJson(object):
             'static_directory': []
         }
 
-        allowed = IInteraction(self.request).checkPermission(
+        allowed = IInteraction(self.request).check_permission(
             'plone.GetDatabases', self.application)
 
         for x in self.application._dbs.keys():

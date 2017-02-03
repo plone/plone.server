@@ -89,7 +89,7 @@ class WebsocketsView(Service):
                     permission = getUtility(
                         IPermission, name='plone.AccessContent')
 
-                    allowed = IInteraction(self.request).checkPermission(
+                    allowed = IInteraction(self.request).check_permission(
                         permission.id, obj)
                     if not allowed:
                         response = {

@@ -21,7 +21,7 @@ class PloneGroup(PloneUser):
 class GroupsUtility(object):
     """ Class used to get groups. """
 
-    def getPrincipal(self, ident):
+    def get_principal(self, ident):
         request = get_current_request()
         if not hasattr(request, '_cache_groups'):
             request._cache_groups = {}

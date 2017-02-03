@@ -12,12 +12,12 @@ from plone.server.interfaces import IResource
 from plone.server.json.serialize_value import json_compatible
 from zope.component import queryAdapter
 from zope.interface import implementer
-from plone.server.auth import principalPermissionManager
-from plone.server.auth import rolePermissionManager
+from plone.server.auth import principal_permission_manager
+from plone.server.auth import role_permission_manager
 
 
-global_principal_permission_setting = principalPermissionManager.getSetting
-global_roles_for_permission = rolePermissionManager.getRolesForPermission
+global_principal_permission_setting = principal_permission_manager.get_setting
+global_roles_for_permission = role_permission_manager.get_roles_for_permission
 
 
 @implementer(ICatalogUtility)

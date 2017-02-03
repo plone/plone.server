@@ -12,15 +12,15 @@ pure_python = os.environ.get('PURE_PYTHON', False)
 is_pypy = py_impl() == 'PyPy'
 is_jython = 'java' in sys.platform
 
-optimization_path = os.path.join('plone', 'server', 'optimizations.c')
-
-if not os.path.exists(optimization_path):
-    optimization_path = os.path.join(
-        'src', 'plone.server', 'plone', 'server', 'optimizations.c')
 
 if pure_python or is_pypy or is_jython:
     ext_modules = []
 else:
+    optimization_path = os.path.join('plone', 'server', 'optimizations.c')
+
+    if not os.path.exists(os.path.realpath(__file__) + optimization_path):
+        optimization_path = os.path.join(
+            'src', 'plone.server', 'plone', 'server', 'optimizations.c')
     ext_modules = [
         Extension(
             'plone.server.optimizations',

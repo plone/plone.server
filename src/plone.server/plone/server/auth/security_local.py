@@ -20,22 +20,22 @@ class PloneRolePermissionManager(PloneSecurityMap):
     # location, but cannot change without breaking existing databases
     key = 'roleperm'
 
-    def grantPermissionToRole(self, permission_id, role_id, inherit=True):
+    def grant_permission_to_role(self, permission_id, role_id, inherit=True):
         if inherit:
-            PloneSecurityMap.addCell(self, permission_id, role_id, Allow)
+            PloneSecurityMap.add_cell(self, permission_id, role_id, Allow)
         else:
-            PloneSecurityMap.addCell(self, permission_id, role_id, AllowSingle)
+            PloneSecurityMap.add_cell(self, permission_id, role_id, AllowSingle)
 
-    def denyPermissionToRole(self, permission_id, role_id):
-        PloneSecurityMap.addCell(self, permission_id, role_id, Deny)
+    def deny_permission_to_role(self, permission_id, role_id):
+        PloneSecurityMap.add_cell(self, permission_id, role_id, Deny)
 
-    unsetPermissionFromRole = PloneSecurityMap.delCell
-    getRolesForPermission = PloneSecurityMap.getRow
-    getPermissionsForRole = PloneSecurityMap.getCol
-    getRolesAndPermissions = PloneSecurityMap.getAllCells
+    unset_permission_from_role = PloneSecurityMap.del_cell
+    get_roles_for_permission = PloneSecurityMap.get_row
+    get_permissions_for_role = PloneSecurityMap.get_col
+    get_roles_and_permissions = PloneSecurityMap.get_all_cells
 
-    def getSetting(self, permission_id, role_id, default=Unset):
-        return PloneSecurityMap.queryCell(
+    def get_setting(self, permission_id, role_id, default=Unset):
+        return PloneSecurityMap.query_cell(
             self, permission_id, role_id, default)
 
 
@@ -52,26 +52,26 @@ class PlonePrincipalPermissionManager(PloneSecurityMap):
     # we'll keep it as is, to prevent breaking old data:
     key = 'prinperm'
 
-    def grantPermissionToPrincipal(
+    def grant_permission_to_principal(
             self, permission_id, principal_id, inherit=True):
         if inherit:
-            PloneSecurityMap.addCell(self, permission_id, principal_id, Allow)
+            PloneSecurityMap.add_cell(self, permission_id, principal_id, Allow)
         else:
-            PloneSecurityMap.addCell(
+            PloneSecurityMap.add_cell(
                 self, permission_id, principal_id, AllowSingle)
 
-    def denyPermissionToPrincipal(self, permission_id, principal_id):
-        PloneSecurityMap.addCell(self, permission_id, principal_id, Deny)
+    def deny_permission_to_principal(self, permission_id, principal_id):
+        PloneSecurityMap.add_cell(self, permission_id, principal_id, Deny)
 
-    unsetPermissionForPrincipal = PloneSecurityMap.delCell
-    getPrincipalsForPermission = PloneSecurityMap.getRow
-    getPermissionsForPrincipal = PloneSecurityMap.getCol
+    unset_permission_for_principal = PloneSecurityMap.del_cell
+    get_principals_for_permission = PloneSecurityMap.get_row
+    get_permissions_for_principal = PloneSecurityMap.get_col
 
-    def getSetting(self, permission_id, principal_id, default=Unset):
-        return PloneSecurityMap.queryCell(
+    def get_setting(self, permission_id, principal_id, default=Unset):
+        return PloneSecurityMap.query_cell(
             self, permission_id, principal_id, default)
 
-    getPrincipalsAndPermissions = PloneSecurityMap.getAllCells
+    get_principals_and_permissions = PloneSecurityMap.get_all_cells
 
 
 @configure.adapter(
@@ -83,25 +83,25 @@ class PlonePrincipalRoleManager(PloneSecurityMap):
 
     key = 'prinrole'
 
-    def assignRoleToPrincipal(self, role_id, principal_id, inherit=True):
+    def assign_role_to_principal(self, role_id, principal_id, inherit=True):
         if inherit:
-            PloneSecurityMap.addCell(self, role_id, principal_id, Allow)
+            PloneSecurityMap.add_cell(self, role_id, principal_id, Allow)
         else:
-            PloneSecurityMap.addCell(self, role_id, principal_id, AllowSingle)
+            PloneSecurityMap.add_cell(self, role_id, principal_id, AllowSingle)
 
-    def removeRoleFromPrincipal(self, role_id, principal_id):
-        PloneSecurityMap.addCell(self, role_id, principal_id, Deny)
+    def remove_role_from_principal(self, role_id, principal_id):
+        PloneSecurityMap.add_cell(self, role_id, principal_id, Deny)
 
-    unsetRoleForPrincipal = PloneSecurityMap.delCell
-    getPrincipalsForRole = PloneSecurityMap.getRow
+    unset_role_for_principal = PloneSecurityMap.del_cell
+    get_principals_for_role = PloneSecurityMap.get_row
 
-    def getSetting(self, role_id, principal_id, default=Unset):
-        return PloneSecurityMap.queryCell(
+    def get_setting(self, role_id, principal_id, default=Unset):
+        return PloneSecurityMap.query_cell(
             self, role_id, principal_id, default)
 
-    getPrincipalsAndRoles = PloneSecurityMap.getAllCells
+    get_principals_and_roles = PloneSecurityMap.get_all_cells
 
-    getPrincipalsForRole = PloneSecurityMap.getRow
-    getRolesForPrincipal = PloneSecurityMap.getCol
+    get_principals_for_role = PloneSecurityMap.get_row
+    get_roles_for_principal = PloneSecurityMap.get_col
 
 

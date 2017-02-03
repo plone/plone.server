@@ -144,7 +144,7 @@ class DeserializeFromJson(object):
             else:
                 try:
                     self.permission_cache[permission_name] = bool(
-                        IInteraction(self.request).checkPermission(
+                        IInteraction(self.request).check_permission(
                             permission.title, self.context))
                 except NoInteraction:
                     # not authenticated

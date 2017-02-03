@@ -353,11 +353,11 @@ def grant_directive(
         _context, principal=None, role=None, permission=None,
         permissions=None):
     from plone.server.auth import \
-        rolePermissionManager as role_perm_mgr
+        role_permission_manager as role_perm_mgr
     from plone.server.auth import \
-        principalPermissionManager as principal_perm_mgr
+        principal_permission_manager as principal_perm_mgr
     from plone.server.auth import \
-        principalRoleManager as principal_role_mgr
+        principal_role_manager as principal_role_mgr
 
     nspecified = ((principal is not None)
                   + (role is not None)
@@ -377,7 +377,7 @@ def grant_directive(
     if principal and role:
         _context.action(
             discriminator=('grantRoleToPrincipal', role, principal),
-            callable=principal_role_mgr.assignRoleToPrincipal,
+            callable=principal_role_mgr.assign_role_to_principal,
             args=(role, principal),
         )
     elif principal and permissions:
@@ -386,14 +386,14 @@ def grant_directive(
                 discriminator=('grantPermissionToPrincipal',
                                permission,
                                principal),
-                callable=principal_perm_mgr.grantPermissionToPrincipal,
+                callable=principal_perm_mgr.grant_permission_to_principal,
                 args=(permission, principal),
             )
     elif role and permissions:
         for permission in permissions:
             _context.action(
                 discriminator=('grantPermissionToRole', permission, role),
-                callable=role_perm_mgr.grantPermissionToRole,
+                callable=role_perm_mgr.grant_permission_to_role,
                 args=(permission, role),
             )
 

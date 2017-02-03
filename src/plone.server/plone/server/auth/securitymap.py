@@ -15,7 +15,7 @@ class SecurityMap(object):
     def __nonzero__(self):
         return bool(self._byrow)
 
-    def addCell(self, rowentry, colentry, value):
+    def add_cell(self, rowentry, colentry, value):
         # setdefault may get expensive if an empty mapping is
         # expensive to create, for PersistentDict for instance.
         row = self._byrow.get(rowentry)
@@ -51,7 +51,7 @@ class SecurityMap(object):
             else:
                 invalidate_cache()
 
-    def delCell(self, rowentry, colentry):
+    def del_cell(self, rowentry, colentry):
         row = self._byrow.get(rowentry)
         if row and (colentry in row):
             del row[colentry]
@@ -68,35 +68,35 @@ class SecurityMap(object):
 
         return False
 
-    def queryCell(self, rowentry, colentry, default=None):
+    def query_cell(self, rowentry, colentry, default=None):
         row = self._byrow.get(rowentry)
         if row:
             return row.get(colentry, default)
         else:
             return default
 
-    def getCell(self, rowentry, colentry):
+    def get_cell(self, rowentry, colentry):
         marker = object()
         cell = self.queryCell(rowentry, colentry, marker)
         if cell is marker:
             raise KeyError('Not a valid row and column pair.')
         return cell
 
-    def getRow(self, rowentry):
+    def get_row(self, rowentry):
         row = self._byrow.get(rowentry)
         if row:
             return list(row.items())
         else:
             return []
 
-    def getCol(self, colentry):
+    def get_col(self, colentry):
         col = self._bycol.get(colentry)
         if col:
             return list(col.items())
         else:
             return []
 
-    def getAllCells(self):
+    def get_all_cells(self):
         res = []
         for r in self._byrow.keys():
             for c in self._byrow[r].items():
@@ -128,10 +128,10 @@ class PloneSecurityMap(SecurityMap):
         else:
             self.context._p_changed = 1
 
-    def addCell(self, rowentry, colentry, value):
-        if SecurityMap.addCell(self, rowentry, colentry, value):
+    def add_cell(self, rowentry, colentry, value):
+        if SecurityMap.add_cell(self, rowentry, colentry, value):
             self._changed()
 
-    def delCell(self, rowentry, colentry):
-        if SecurityMap.delCell(self, rowentry, colentry):
+    def del_cell(self, rowentry, colentry):
+        if SecurityMap.del_cell(self, rowentry, colentry):
             self._changed()

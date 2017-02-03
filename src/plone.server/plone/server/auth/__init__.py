@@ -5,9 +5,9 @@ from zope.security.proxy import removeSecurityProxy
 from plone.server.interfaces import IRolePermissionMap
 from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleMap
-from plone.server.auth.security_code import principalPermissionManager
-from plone.server.auth.security_code import rolePermissionManager
-from plone.server.auth.security_code import principalRoleManager
+from plone.server.auth.security_code import principal_permission_manager
+from plone.server.auth.security_code import role_permission_manager
+from plone.server.auth.security_code import principal_role_manager
 from . import groups
 
 
@@ -43,7 +43,7 @@ def get_roles_with_access_content(obj):
         removeSecurityProxy(getattr(obj, '__parent__', None)))
     roleperm = IRolePermissionMap(obj)
 
-    for role, permission in roleperm.getRow('plone.AccessContent'):
+    for role, permission in roleperm.get_row('plone.AccessContent'):
         active_roles[role] = permission
     return active_roles
 
@@ -55,7 +55,7 @@ def get_principals_with_access_content(obj):
         removeSecurityProxy(getattr(obj, '__parent__', None)))
     prinperm = IPrincipalPermissionMap(obj)
 
-    for role, permission in prinperm.getRow('plone.AccessContent'):
+    for role, permission in prinperm.get_row('plone.AccessContent'):
         active_roles[role] = permission
     return active_roles
 
@@ -70,7 +70,7 @@ def settingsForObject(ob):
 
         principalPermissions = IPrincipalPermissionMap(ob, None)
         if principalPermissions is not None:
-            settings = principalPermissions.getPrincipalsAndPermissions()
+            settings = principalPermissions.get_principals_and_permissions()
             settings.sort()
             data['principalPermissions'] = [
                 {'principal': pr, 'permission': p, 'setting': s}
@@ -78,14 +78,14 @@ def settingsForObject(ob):
 
         principalRoles = IPrincipalRoleMap(ob, None)
         if principalRoles is not None:
-            settings = principalRoles.getPrincipalsAndRoles()
+            settings = principalRoles.get_principals_and_roles()
             data['principalRoles'] = [
                 {'principal': p, 'role': r, 'setting': s}
                 for (r, p, s) in settings]
 
         rolePermissions = IRolePermissionMap(ob, None)
         if rolePermissions is not None:
-            settings = rolePermissions.getRolesAndPermissions()
+            settings = rolePermissions.get_roles_and_permissions()
             data['rolePermissions'] = [
                 {'permission': p, 'role': r, 'setting': s}
                 for (p, r, s) in settings]
@@ -95,18 +95,18 @@ def settingsForObject(ob):
     data = {}
     result.append(('global settings', data))
 
-    settings = principalPermissionManager.getPrincipalsAndPermissions()
+    settings = principal_permission_manager.get_principals_and_permissions()
     settings.sort()
     data['principalPermissions'] = [
         {'principal': pr, 'permission': p, 'setting': s}
         for (p, pr, s) in settings]
 
-    settings = principalRoleManager.getPrincipalsAndRoles()
+    settings = principal_role_manager.get_principals_and_roles()
     data['principalRoles'] = [
         {'principal': p, 'role': r, 'setting': s}
         for (r, p, s) in settings]
 
-    settings = rolePermissionManager.getRolesAndPermissions()
+    settings = role_permission_manager.get_roles_and_permissions()
     data['rolePermissions'] = [
         {'permission': p, 'role': r, 'setting': s}
         for (p, r, s) in settings]

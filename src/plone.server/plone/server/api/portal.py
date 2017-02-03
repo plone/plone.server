@@ -89,7 +89,7 @@ class DefaultPOST(Service):
 
         # Local Roles assign owner as the creator user
         roleperm = IPrincipalRoleManager(site)
-        roleperm.assignRoleToPrincipal(
+        roleperm.assign_role_to_principal(
             'plone.Owner',
             user)
 

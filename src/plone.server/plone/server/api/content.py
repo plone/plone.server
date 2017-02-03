@@ -116,7 +116,7 @@ class DefaultPOST(Service):
 
         # Local Roles assign owner as the creator user
         roleperm = IPrincipalRoleManager(obj)
-        roleperm.assignRoleToPrincipal(
+        roleperm.assign_role_to_principal(
             'plone.Owner',
             user)
 
@@ -209,12 +209,12 @@ async def sharing_post(context, request):
     if 'prinrole' in data:
         for user, roles in data['prinrole'].items():
             for role in roles:
-                prinrole.assignRoleToPrincipal(role, user)
+                prinrole.assign_role_to_principal(role, user)
 
     if 'roleperm' in data:
         for role, perms in data['roleperm'].items():
             for perm in perms:
-                roleperm.grantPermissionToRole(perm, role)
+                roleperm.grant_permission_to_role(perm, role)
     await notify(ObjectPermissionsModifiedEvent(context))
 
 

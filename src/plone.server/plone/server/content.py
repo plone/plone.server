@@ -190,7 +190,7 @@ def create_content_in_container(container, type_, id_, request=None, **kw):
             request = get_current_request()
 
         if permission is not None and \
-                not IInteraction(request).checkPermission(permission.id, container):
+                not IInteraction(request).check_permission(permission.id, container):
             raise NoPermissionToAdd(str(container), type_)
 
     constrains = IConstrainTypes(container, None)
@@ -441,12 +441,12 @@ class Site(Folder):
             frozenset({'plone.server.interfaces.layer.IDefaultLayer'})
 
         roles = IPrincipalRoleManager(self)
-        roles.assignRoleToPrincipal(
+        roles.assign_role_to_principal(
             'plone.SiteAdmin',
             ROOT_USER_ID
         )
 
-        roles.assignRoleToPrincipal(
+        roles.assign_role_to_principal(
             'plone.Owner',
             ROOT_USER_ID
         )

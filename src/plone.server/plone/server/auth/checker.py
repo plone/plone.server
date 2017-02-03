@@ -1,16 +1,6 @@
 # -*- coding: utf-8 -*-
-from plone.server import configure
-from plone.server.content import iter_schemata
-from plone.server.directives import merged_tagged_value_dict
-from plone.server.directives import read_permission
-from plone.server.directives import write_permission
-from plone.server.interfaces import DEFAULT_READ_PERMISSION
-from plone.server.interfaces import DEFAULT_WRITE_PERMISSION
-from plone.server.interfaces import IRequest
-from plone.server.interfaces import IResource
 from plone.server.transactions import get_current_request
 from zope.interface import implementer
-from zope.security._zope_security_checker import selectChecker
 from zope.security.checker import _available_by_default
 from zope.security.checker import CheckerPublic
 from zope.security.checker import CheckerPy
@@ -19,11 +9,6 @@ from zope.security.interfaces import ForbiddenAttribute
 from zope.security.interfaces import IChecker
 from zope.security.interfaces import IInteraction
 from zope.security.interfaces import Unauthorized
-from zope.security.proxy import Proxy
-from plone.server.auth import principalRoleManager
-
-
-globalRolesForPrincipal = principalRoleManager.getRolesForPrincipal
 
 
 _marker = object()
@@ -47,7 +32,7 @@ class ViewPermissionChecker(CheckerPy):
                 return  # Public
 
             request = get_current_request()
-            if IInteraction(request).checkPermission(permission, obj):
+            if IInteraction(request).check_permission(permission, obj):
                 return  # allowed
             else:
                 __traceback_supplement__ = (TracebackSupplement, obj)
@@ -62,7 +47,7 @@ class ViewPermissionChecker(CheckerPy):
             if permission is CheckerPublic:
                 return  # Public
             request = get_current_request()
-            if IInteraction(request).checkPermission(permission, obj):
+            if IInteraction(request).check_permission(permission, obj):
                 return
             else:
                 __traceback_supplement__ = (TracebackSupplement, obj)

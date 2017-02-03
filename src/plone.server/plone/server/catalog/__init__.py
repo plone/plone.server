@@ -5,12 +5,12 @@ from plone.server.auth import get_principals_with_access_content
 from plone.server.auth import get_roles_with_access_content
 from plone.server.utils import get_content_path
 from plone.server.utils import get_content_depth
-from plone.server.auth import rolePermissionManager
+from plone.server.auth import role_permission_manager
 from plone.server.interfaces import Allow
 from plone.server.interfaces import Deny
 
 
-global_roles_for_permission = rolePermissionManager.getRolesForPermission
+global_roles_for_permission = role_permission_manager.get_roles_for_permission
 
 
 index.apply(IResource, 'uuid', type='keyword')

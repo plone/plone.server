@@ -111,7 +111,7 @@ class IRole(Interface):
 class IPrincipalRoleMap(Interface):
     """Mappings between principals and roles."""
 
-    def getPrincipalsForRole(role_id):
+    def get_principals_for_role(role_id):
         """Get the principals that have been granted a role.
 
         Return the list of (principal id, setting) who have been assigned or
@@ -121,7 +121,7 @@ class IPrincipalRoleMap(Interface):
         then the empty list is returned.
         """
 
-    def getRolesForPrincipal(principal_id):
+    def get_roles_for_principal(principal_id):
         """Get the roles granted to a principal.
 
         Return the list of (role id, setting) assigned or removed from
@@ -131,11 +131,11 @@ class IPrincipalRoleMap(Interface):
         this principal, then the empty list is returned.
         """
 
-    def getSetting(role_id, principal_id, default=Unset):
+    def get_setting(role_id, principal_id, default=Unset):
         """Return the setting for this principal, role combination
         """
 
-    def getPrincipalsAndRoles():
+    def get_principals_and_roles():
         """Get all settings.
 
         Return all the principal/role combinations along with the
@@ -147,20 +147,20 @@ class IPrincipalRoleMap(Interface):
 class IPrincipalRoleManager(IPrincipalRoleMap):
     """Management interface for mappings between principals and roles."""
 
-    def assignRoleToPrincipal(role_id, principal_id, inherit):
+    def assign_role_to_principal(role_id, principal_id, inherit):
         """Assign the role to the principal."""
 
-    def removeRoleFromPrincipal(role_id, principal_id):
+    def remove_role_from_principal(role_id, principal_id):
         """Remove a role from the principal."""
 
-    def unsetRoleForPrincipal(role_id, principal_id):
+    def unset_role_for_principal(role_id, principal_id):
         """Unset the role for the principal."""
 
 
 class IRolePermissionMap(Interface):
     """Mappings between roles and permissions."""
 
-    def getPermissionsForRole(role_id):
+    def get_permissions_for_role(role_id):
         """Get the premissions granted to a role.
 
         Return a sequence of (permission id, setting) tuples for the given
@@ -170,7 +170,7 @@ class IRolePermissionMap(Interface):
         role, then the empty list is returned.
         """
 
-    def getRolesForPermission(permission_id):
+    def get_roles_for_permission(permission_id):
         """Get the roles that have a permission.
 
         Return a sequence of (role id, setting) tuples for the given
@@ -180,13 +180,13 @@ class IRolePermissionMap(Interface):
         returned.
         """
 
-    def getSetting(permission_id, role_id, default=Unset):
+    def get_setting(permission_id, role_id, default=Unset):
         """Return the setting for the given permission id and role id
 
         If there is no setting, Unset is returned
         """
 
-    def getRolesAndPermissions():
+    def get_roles_and_permissions():
         """Return a sequence of (permission_id, role_id, setting) here.
 
         The settings are returned as a sequence of permission, role,
@@ -200,15 +200,15 @@ class IRolePermissionMap(Interface):
 class IRolePermissionManager(IRolePermissionMap):
     """Management interface for mappings between roles and permissions."""
 
-    def grantPermissionToRole(permission_id, role_id, inherit):
+    def grant_permission_to_role(permission_id, role_id, inherit):
         """Bind the permission to the role.
         """
 
-    def denyPermissionToRole(permission_id, role_id):
+    def deny_permission_to_role(permission_id, role_id):
         """Deny the permission to the role
         """
 
-    def unsetPermissionFromRole(permission_id, role_id):
+    def unset_permission_from_role(permission_id, role_id):
         """Clear the setting of the permission to the role.
         """
 
@@ -216,7 +216,7 @@ class IRolePermissionManager(IRolePermissionMap):
 class IPrincipalPermissionMap(Interface):
     """Mappings between principals and permissions."""
 
-    def getPrincipalsForPermission(permission_id):
+    def get_principals_for_permission(permission_id):
         """Get the principas that have a permission.
 
         Return the list of (principal_id, setting) tuples that describe
@@ -226,7 +226,7 @@ class IPrincipalPermissionMap(Interface):
         list is returned.
         """
 
-    def getPermissionsForPrincipal(principal_id):
+    def get_permissions_for_principal(principal_id):
         """Get the permissions granted to a principal.
 
         Return the list of (permission, setting) tuples that describe
@@ -236,14 +236,14 @@ class IPrincipalPermissionMap(Interface):
         list is returned.
         """
 
-    def getSetting(permission_id, principal_id, default=Unset):
+    def get_setting(permission_id, principal_id, default=Unset):
         """Get the setting for a permission and principal.
 
         Get the setting (Allow/Deny/Unset) for a given permission and
         principal.
         """
 
-    def getPrincipalsAndPermissions():
+    def get_principals_and_permissions():
         """Get all principal permission settings.
 
         Get the principal security assertions here in the form
@@ -255,15 +255,15 @@ class IPrincipalPermissionMap(Interface):
 class IPrincipalPermissionManager(IPrincipalPermissionMap):
     """Management interface for mappings between principals and permissions."""
 
-    def grantPermissionToPrincipal(permission_id, principal_id, inherit):
+    def grant_permission_to_principal(permission_id, principal_id, inherit):
         """Assert that the permission is allowed for the principal.
         """
 
-    def denyPermissionToPrincipal(permission_id, principal_id):
+    def deny_permission_to_principal(permission_id, principal_id):
         """Assert that the permission is denied to the principal.
         """
 
-    def unsetPermissionForPrincipal(permission_id, principal_id):
+    def unset_permission_for_principal(permission_id, principal_id):
         """Remove the permission (either denied or allowed) from the
         principal.
         """
@@ -273,26 +273,22 @@ class IGrantInfo(Interface):
     """Get grant info needed for checking access
     """
 
-    def principalPermissionGrant(principal, permission):
+    def principal_permission_grant(principal, permission):
         """Return the principal-permission grant if any
 
         The return value is one of Allow, Deny, or Unset
         """
 
-    def getRolesForPermission(permission):
+    def get_roles_for_permission(permission):
         """Return the role grants for the permission
 
         The role grants are an iterable of role, setting tuples, where
         setting is either Allow or Deny.
         """
 
-    def getRolesForPrincipal(principal):
+    def get_roles_for_principal(principal):
         """Return the role grants for the principal
 
         The role grants are an iterable of role, setting tuples, where
         setting is either Allow or Deny.
         """
-
-
-class IGrantVocabulary(Interface):
-    """Marker interface for register the RadioWidget."""
