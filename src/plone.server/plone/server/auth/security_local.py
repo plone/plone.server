@@ -20,11 +20,12 @@ class PloneRolePermissionManager(PloneSecurityMap):
     # location, but cannot change without breaking existing databases
     key = 'roleperm'
 
-    def grant_permission_to_role(self, permission_id, role_id, inherit=True):
-        if inherit:
-            PloneSecurityMap.add_cell(self, permission_id, role_id, Allow)
-        else:
-            PloneSecurityMap.add_cell(self, permission_id, role_id, AllowSingle)
+    def grant_permission_to_role(self, permission_id, role_id):
+        PloneSecurityMap.add_cell(self, permission_id, role_id, Allow)
+
+    def grant_permission_to_role_no_inherit(self, permission_id, role_id):
+        PloneSecurityMap.add_cell(
+            self, permission_id, role_id, AllowSingle)
 
     def deny_permission_to_role(self, permission_id, role_id):
         PloneSecurityMap.add_cell(self, permission_id, role_id, Deny)
@@ -53,12 +54,13 @@ class PlonePrincipalPermissionManager(PloneSecurityMap):
     key = 'prinperm'
 
     def grant_permission_to_principal(
-            self, permission_id, principal_id, inherit=True):
-        if inherit:
-            PloneSecurityMap.add_cell(self, permission_id, principal_id, Allow)
-        else:
-            PloneSecurityMap.add_cell(
-                self, permission_id, principal_id, AllowSingle)
+            self, permission_id, principal_id):
+        PloneSecurityMap.add_cell(self, permission_id, principal_id, Allow)
+
+    def grant_permission_to_principal_no_inherit(
+            self, permission_id, principal_id):
+        PloneSecurityMap.add_cell(
+            self, permission_id, principal_id, AllowSingle)
 
     def deny_permission_to_principal(self, permission_id, principal_id):
         PloneSecurityMap.add_cell(self, permission_id, principal_id, Deny)
@@ -84,10 +86,11 @@ class PlonePrincipalRoleManager(PloneSecurityMap):
     key = 'prinrole'
 
     def assign_role_to_principal(self, role_id, principal_id, inherit=True):
-        if inherit:
-            PloneSecurityMap.add_cell(self, role_id, principal_id, Allow)
-        else:
-            PloneSecurityMap.add_cell(self, role_id, principal_id, AllowSingle)
+        PloneSecurityMap.add_cell(self, role_id, principal_id, Allow)
+
+    def assign_role_to_principal_no_inherit(self, role_id, principal_id):
+        PloneSecurityMap.add_cell(
+            self, role_id, principal_id, AllowSingle)
 
     def remove_role_from_principal(self, role_id, principal_id):
         PloneSecurityMap.add_cell(self, role_id, principal_id, Deny)

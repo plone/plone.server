@@ -147,7 +147,10 @@ class IPrincipalRoleMap(Interface):
 class IPrincipalRoleManager(IPrincipalRoleMap):
     """Management interface for mappings between principals and roles."""
 
-    def assign_role_to_principal(role_id, principal_id, inherit):
+    def assign_role_to_principal(role_id, principal_id):
+        """Assign the role to the principal."""
+
+    def assign_role_to_principal_no_inherit(role_id, principal_id):
         """Assign the role to the principal."""
 
     def remove_role_from_principal(role_id, principal_id):
@@ -200,9 +203,12 @@ class IRolePermissionMap(Interface):
 class IRolePermissionManager(IRolePermissionMap):
     """Management interface for mappings between roles and permissions."""
 
-    def grant_permission_to_role(permission_id, role_id, inherit):
+    def grant_permission_to_role(permission_id, role_id):
         """Bind the permission to the role.
         """
+
+    def grant_permission_to_role_no_inherit(role_id, principal_id):
+        """Assign the role to the principal without local inherit."""
 
     def deny_permission_to_role(permission_id, role_id):
         """Deny the permission to the role
@@ -255,9 +261,12 @@ class IPrincipalPermissionMap(Interface):
 class IPrincipalPermissionManager(IPrincipalPermissionMap):
     """Management interface for mappings between principals and permissions."""
 
-    def grant_permission_to_principal(permission_id, principal_id, inherit):
+    def grant_permission_to_principal(permission_id, principal_id):
         """Assert that the permission is allowed for the principal.
         """
+
+    def grant_permission_to_principal_no_inherit(role_id, principal_id):
+        """Assign the role to the principal without local inherit."""
 
     def deny_permission_to_principal(permission_id, principal_id):
         """Assert that the permission is denied to the principal.

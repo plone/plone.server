@@ -94,7 +94,7 @@ def settingsForObject(ob):
         ob = getattr(ob, '__parent__', None)
 
     data = {}
-    result.append(('global settings', data))
+    result.append(('code settings', data))
 
     settings = principal_permission_manager.get_principals_and_permissions()
     settings.sort()

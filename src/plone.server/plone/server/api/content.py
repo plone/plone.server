@@ -26,8 +26,13 @@ from plone.server.interfaces import IResourceDeserializeFromJson
 from plone.server.interfaces import IResourceSerializeToJson
 from plone.server.utils import get_authenticated_user_id
 from plone.server.utils import iter_parents
+from plone.server.auth import settingsForObject
 from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
+from plone.server.interfaces import Allow
+from plone.server.interfaces import AllowSingle
+from plone.server.interfaces import Deny
+from plone.server.interfaces import Unset
 
 from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleManager
@@ -182,49 +187,94 @@ async def sharing_get(context, request):
         'local': {},
         'inherit': []
     }
-    result['local']['role_permission'] = roleperm._byrow
-    result['local']['principal_permission'] = prinperm._byrow
-    result['local']['principal_role'] = prinrole._byrow
+    result['local']['roleperm'] = roleperm._byrow
+    result['local']['prinperm'] = prinperm._byrow
+    result['local']['prinrole'] = prinrole._byrow
     for obj in iter_parents(context):
         roleperm = IRolePermissionMap(obj)
         prinperm = IPrincipalPermissionMap(obj)
         prinrole = IPrincipalRoleMap(obj)
         result['inherit'].append({
             '@id': IAbsoluteURL(obj, request)(),
-            'role_permission': roleperm._byrow,
-            'principal_permission': prinperm._byrow,
-            'principal_role': prinrole._byrow,
+            'roleperm': roleperm._byrow,
+            'prinperm': prinperm._byrow,
+            'prinrole': prinrole._byrow,
         })
     await notify(ObjectPermissionsViewEvent(context))
     return result
 
 
+@configure.service(context=IResource, method='HEAD', permission='plone.SeePermissions',
+                   name='@sharing')
+async def sharing_head(context, request):
+    result = settingsForObject(context)
+    await notify(ObjectPermissionsViewEvent(context))
+    return result
+
+
+PermissionMap = {
+    'prinrole': {
+        'Allow': 'assign_role_to_principal',
+        'Deny': 'remove_role_from_principal',
+        'AllowSingle': 'assign_role_to_principal_no_inherit',
+        'Unset': 'unset_role_for_principal'
+    },
+    'roleperm': {
+        'Allow': 'grant_permission_to_role',
+        'Deny': 'deny_permission_to_role',
+        'AllowSingle': 'grant_permission_to_role_no_inherit',
+        'Unset': 'unset_permission_from_role'
+    },
+    'prinperm': {
+        'Allow': 'grant_permission_to_principal',
+        'Deny': 'deny_permission_to_principal',
+        'AllowSingle': 'grant_permission_to_principal_no_inherit',
+        'Unset': 'unset_permission_for_principal'
+    }
+}
+
+
 @configure.service(context=IResource, method='POST', permission='plone.ChangePermissions',
                    name='@sharing')
 async def sharing_post(context, request):
+    """Change permissions"""
     data = await request.json()
-    roleperm = IRolePermissionManager(context)
-    prinrole = IPrincipalRoleManager(context)
-    prinperm = IPrincipalPermissionManager(context)
     if 'prinrole' not in data and \
             'roleperm' not in data and \
             'prinperm' not in data:
-        raise AttributeError('prinrole or roleperm missing')
+        raise AttributeError('prinrole or roleperm or prinperm missing')
+
+    if 'type' not in data:
+        raise AttributeError('type missing')
+
+    setting = data['type']
+    if setting not in PermissionMap:
+        raise AttributeError('Invalid Type')
 
     if 'prinrole' in data:
+        manager = IPrincipalRoleManager(context)
+        operations = PermissionMap['prinrole'][setting]
+        func = manager.getattr(operations['type'])
         for user, roles in data['prinrole'].items():
             for role in roles:
-                prinrole.assign_role_to_principal(role, user)
+                func(role.user)
 
     if 'prinperm' in data:
-        for user, permissions in data['prinperm'].items():
-            for permission in permissions:
-                prinperm.grant_permission_to_principal(permission, user)
+        manager = IPrincipalPermissionManager(context)
+        operations = PermissionMap['prinperm'][setting]
+        func = manager.getattr(operations['type'])
+        for user, roles in data['prinperm'].items():
+            for role in roles:
+                func(role.user)
 
     if 'roleperm' in data:
-        for role, perms in data['roleperm'].items():
-            for perm in perms:
-                roleperm.grant_permission_to_role(perm, role)
+        manager = IRolePermissionManager(context)
+        operations = PermissionMap['roleperm'][setting]
+        func = manager.getattr(operations['type'])
+        for user, roles in data['roleperm'].items():
+            for role in roles:
+                func(role.user)
+
     await notify(ObjectPermissionsModifiedEvent(context))
 
 

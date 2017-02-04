@@ -140,10 +140,10 @@ class RendererRaw(Renderer):
     def guess_response(self, value):
         resp = value.response
         if isinstance(resp, dict):
-            resp = aioResponse(body=bytes(json.dumps(resp), 'utf-8'))
+            resp = aioResponse(body=bytes(json.dumps(resp, cls=PServerJSONEncoder), 'utf-8'))
             resp.headers['Content-Type'] = 'application/json'
         elif isinstance(resp, list):
-            resp = aioResponse(body=bytes(json.dumps(resp), 'utf-8'))
+            resp = aioResponse(body=bytes(json.dumps(resp, cls=PServerJSONEncoder ), 'utf-8'))
             resp.headers['Content-Type'] = 'application/json'
         elif isinstance(resp, str):
             resp = aioResponse(body=bytes(resp, 'utf-8'))
