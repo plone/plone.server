@@ -291,7 +291,7 @@ async def can_i_do(context, request):
     if 'permission' not in request.GET:
         raise TypeError('No permission param')
     permission = request.GET['permission']
-    return IInteraction(request).checkPermission(permission, context)
+    return IInteraction(request).check_permission(permission, context)
 
 
 @configure.service(context=IResource, method='DELETE', permission='plone.DeleteContent')
