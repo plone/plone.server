@@ -85,6 +85,7 @@ configure.grant(
 configure.grant(
     permission="plone.SearchContent",
     role="plone.Member")
+
 configure.grant(
     permission="plone.RawSearchContent",
     role="plone.SiteAdmin")

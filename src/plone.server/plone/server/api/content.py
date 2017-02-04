@@ -204,8 +204,8 @@ async def sharing_get(context, request):
     return result
 
 
-@configure.service(context=IResource, method='HEAD', permission='plone.SeePermissions',
-                   name='@sharing')
+@configure.service(context=IResource, method='GET', permission='plone.SeePermissions',
+                   name='@all_permissions')
 async def sharing_head(context, request):
     result = settingsForObject(context)
     await notify(ObjectPermissionsViewEvent(context))
@@ -248,32 +248,36 @@ async def sharing_post(context, request):
         raise AttributeError('type missing')
 
     setting = data['type']
-    if setting not in PermissionMap:
-        raise AttributeError('Invalid Type')
 
     if 'prinrole' in data:
+        if setting not in PermissionMap['prinrole']:
+            raise AttributeError('Invalid Type')
         manager = IPrincipalRoleManager(context)
-        operations = PermissionMap['prinrole'][setting]
-        func = manager.getattr(operations['type'])
+        operation = PermissionMap['prinrole'][setting]
+        func = getattr(manager, operation)
         for user, roles in data['prinrole'].items():
             for role in roles:
-                func(role.user)
+                func(user, role)
 
     if 'prinperm' in data:
+        if setting not in PermissionMap['prinperm']:
+            raise AttributeError('Invalid Type')
         manager = IPrincipalPermissionManager(context)
-        operations = PermissionMap['prinperm'][setting]
-        func = manager.getattr(operations['type'])
-        for user, roles in data['prinperm'].items():
-            for role in roles:
-                func(role.user)
+        operation = PermissionMap['prinperm'][setting]
+        func = getattr(manager, operation)
+        for user, permissions in data['prinperm'].items():
+            for permision in permissions:
+                func(user, permision)
 
     if 'roleperm' in data:
+        if setting not in PermissionMap['roleperm']:
+            raise AttributeError('Invalid Type')
         manager = IRolePermissionManager(context)
-        operations = PermissionMap['roleperm'][setting]
-        func = manager.getattr(operations['type'])
-        for user, roles in data['roleperm'].items():
-            for role in roles:
-                func(role.user)
+        operation = PermissionMap['roleperm'][setting]
+        func = getattr(manager, operation)
+        for role, permissions in data['roleperm'].items():
+            for permission in permissions:
+                func(role, permission)
 
     await notify(ObjectPermissionsModifiedEvent(context))
 
