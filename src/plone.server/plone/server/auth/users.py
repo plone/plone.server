@@ -36,6 +36,10 @@ class PloneUser(object):
     def permissions(self):
         return self._permissions
 
+    @property
+    def properties(self):
+        return self._properties
+
 
 class AnonymousUser(PloneUser):
 

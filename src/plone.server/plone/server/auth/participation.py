@@ -4,13 +4,14 @@ from plone.server.auth import authenticate_request
 from plone.server.auth.users import AnonymousUser
 from plone.server.interfaces import IRequest
 from zope.security.interfaces import IParticipation
+from plone.server.interfaces import Allow
 
 
 class AnonymousParticipation(object):
 
     def __init__(self, request):
         self.principal = AnonymousUser(request)
-        self.principal._roles['plone.Anonymous'] = 1
+        self.principal._roles['plone.Anonymous'] = Allow
         self.interaction = None
 
 

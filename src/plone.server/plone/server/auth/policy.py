@@ -345,9 +345,9 @@ class Interaction(object):
             for role, setting in roleper.get_roles_for_permission(permission):
                 if setting is Allow:
                     roles[role] = 1
-                if setting is AllowSingle and level == 'o':
+                elif setting is AllowSingle and level == 'o':
                     roles[role] = 1
-                elif role in roles:
+                elif setting is Deny and role in roles:
                     del roles[role]
 
         cache_roles[permission] = roles

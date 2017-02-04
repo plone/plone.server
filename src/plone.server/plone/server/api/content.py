@@ -42,6 +42,8 @@ from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleMap
 from plone.server.interfaces import IRolePermissionMap
 
+from zope.security.interfaces import IInteraction
+
 
 _zone = tzlocal()
 
@@ -187,18 +189,18 @@ async def sharing_get(context, request):
         'local': {},
         'inherit': []
     }
-    result['local']['roleperm'] = roleperm._byrow
-    result['local']['prinperm'] = prinperm._byrow
-    result['local']['prinrole'] = prinrole._byrow
+    result['local']['roleperm'] = roleperm._bycol
+    result['local']['prinperm'] = prinperm._bycol
+    result['local']['prinrole'] = prinrole._bycol
     for obj in iter_parents(context):
         roleperm = IRolePermissionMap(obj)
         prinperm = IPrincipalPermissionMap(obj)
         prinrole = IPrincipalRoleMap(obj)
         result['inherit'].append({
             '@id': IAbsoluteURL(obj, request)(),
-            'roleperm': roleperm._byrow,
-            'prinperm': prinperm._byrow,
-            'prinrole': prinrole._byrow,
+            'roleperm': roleperm._bycol,
+            'prinperm': prinperm._bycol,
+            'prinrole': prinrole._bycol,
         })
     await notify(ObjectPermissionsViewEvent(context))
     return result
@@ -206,7 +208,7 @@ async def sharing_get(context, request):
 
 @configure.service(context=IResource, method='GET', permission='plone.SeePermissions',
                    name='@all_permissions')
-async def sharing_head(context, request):
+async def all_permissions(context, request):
     result = settingsForObject(context)
     await notify(ObjectPermissionsViewEvent(context))
     return result
@@ -280,6 +282,16 @@ async def sharing_post(context, request):
                 func(role, permission)
 
     await notify(ObjectPermissionsModifiedEvent(context))
+
+
+@configure.service(
+    context=IResource, method='GET', permission='plone.AccessContent',
+    name='@canido')
+async def can_i_do(context, request):
+    if 'permission' not in request.GET:
+        raise TypeError('No permission param')
+    permission = request.GET['permission']
+    return IInteraction(request).checkPermission(permission, context)
 
 
 @configure.service(context=IResource, method='DELETE', permission='plone.DeleteContent')
