@@ -38,6 +38,8 @@ class PServerJSONEncoder(json.JSONEncoder):
 
         if isinstance(obj, PermissionSetting):
             return obj.getName()
+        if callable(obj):
+            return obj.__module__ + '.' + obj.__name__
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
 
