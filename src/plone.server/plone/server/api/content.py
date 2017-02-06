@@ -29,17 +29,12 @@ from plone.server.utils import iter_parents
 from plone.server.auth import settingsForObject
 from zope.component import getMultiAdapter
 from zope.component import queryMultiAdapter
-from plone.server.interfaces import Allow
-from plone.server.interfaces import AllowSingle
-from plone.server.interfaces import Deny
-from plone.server.interfaces import Unset
 from plone.server.auth.role import local_roles
 
 from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleManager
 from plone.server.interfaces import IRolePermissionManager
 from plone.server.interfaces import IPrincipalPermissionManager
-from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleMap
 from plone.server.interfaces import IRolePermissionMap
 
@@ -69,6 +64,10 @@ class DefaultPOST(Service):
         type_ = data.get('@type', None)
         id_ = data.get('id', None)
         behaviors = data.get('@behaviors', None)
+
+        if '__acl__' in data:
+            # we don't allow to change the permisions on this patch
+            del data['__acl__']
 
         if not type_:
             return ErrorResponse(
@@ -130,7 +129,7 @@ class DefaultPOST(Service):
             'plone.Owner',
             user)
 
-        await notify(ObjectFinallyCreatedEvent(obj))
+        await notify(ObjectFinallyCreatedEvent(obj, data))
 
         absolute_url = queryMultiAdapter((obj, self.request), IAbsoluteURL)
 
@@ -175,7 +174,7 @@ class DefaultPATCH(Service):
                 str(e),
                 status=400)
 
-        await notify(ObjectFinallyModifiedEvent(self.context))
+        await notify(ObjectFinallyModifiedEvent(self.context, data))
 
         return Response(response={}, status=204)
 
@@ -286,7 +285,7 @@ async def sharing_post(context, request):
             for permission in permissions:
                 func(permission, role)
 
-    await notify(ObjectPermissionsModifiedEvent(context))
+    await notify(ObjectPermissionsModifiedEvent(context, data))
 
 
 @configure.service(
