@@ -2,6 +2,7 @@ from plone.server import app_settings
 from plone.server.auth.users import ROOT_USER_ID
 from plone.server.utils import resolve_or_get
 from zope.security.proxy import removeSecurityProxy
+from zope.security.interfaces import IInteraction
 from plone.server.interfaces import IRolePermissionMap
 from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleMap
@@ -9,6 +10,8 @@ from plone.server.auth.security_code import principal_permission_manager
 from plone.server.auth.security_code import role_permission_manager
 from plone.server.auth.security_code import principal_role_manager
 from . import groups
+from . import role
+from plone.server.transactions import get_current_request
 
 
 async def authenticate_request(request):
@@ -36,29 +39,36 @@ async def find_user(request, token):
             return user
 
 
-def get_roles_with_access_content(obj):
+def get_roles_with_access_content(obj, request=None):
+    """ Return the roles that has access to the content that are global roles"""
+    if obj is None:
+        return []
+    if request is None:
+        request = get_current_request()
+    interaction = IInteraction(request)
+    roles = interaction.cached_roles(obj, 'plone.AccessContent', 'o')
+    result = []
+    for r in roles.keys():
+        lroles = role.global_roles()
+        if r in lroles:
+            result.append(r)
+    return result
+
+
+def get_principals_with_access_content(obj, request=None):
     if obj is None:
         return {}
-    active_roles = get_roles_with_access_content(
-        removeSecurityProxy(getattr(obj, '__parent__', None)))
-    roleperm = IRolePermissionMap(obj)
-
-    for role, permission in roleperm.get_row('plone.AccessContent'):
-        active_roles[role] = permission
-    return active_roles
-
-
-def get_principals_with_access_content(obj):
-    if obj is None:
-        return {}
-
-    active_roles = get_principals_with_access_content(
-        removeSecurityProxy(getattr(obj, '__parent__', None)))
-    prinperm = IPrincipalPermissionMap(obj)
-
-    for role, permission in prinperm.get_row('plone.AccessContent'):
-        active_roles[role] = permission
-    return active_roles
+    if request is None:
+        request = get_current_request()
+    interaction = IInteraction(request)
+    roles = interaction.cached_roles(obj, 'plone.AccessContent', 'o')
+    result = []
+    for r in roles.keys():
+        lroles = role.local_roles()
+        if r in lroles:
+            result.append(r)
+    users = interaction.cached_principals(obj, result, 'plone.AccessContent', 'o')
+    return list(users.keys())
 
 
 def settingsForObject(ob):

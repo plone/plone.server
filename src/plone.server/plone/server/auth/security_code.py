@@ -159,4 +159,3 @@ class RolePermissionManager(SecurityMap):
 
 # Permissions are our rows, and roles are our columns
 role_permission_manager = RolePermissionManager()
-

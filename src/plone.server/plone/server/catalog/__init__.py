@@ -20,47 +20,17 @@ index.apply(IResource, 'modification_date', type='date')
 index.apply(IResource, 'creation_date', type='date')
 
 
-def get_roles(ob):
-    roles = {}
-    groles = global_roles_for_permission('plone.AccessContent')
-
-    for r in groles:
-        roles[r[0]] = r[1]
-    lroles = get_roles_with_access_content(ob)
-    roles.update(lroles)
-    return roles
-
-
-def get_users(ob):
-    users = {}
-    lusers = get_principals_with_access_content(ob)
-    users.update(lusers)
-    return users
-
-
 @index.with_accessor(IResource, 'access_roles', type='keyword')
 def get_access_roles(ob):
-    roles = get_roles(ob)
-    return [x for x in roles if roles[x] == Allow]
+    roles = get_roles_with_access_content(ob)
+    return roles
 
 
 @index.with_accessor(IResource, 'access_users', type='keyword')
 def get_access_users(ob):
-    users = get_users(ob)
-    return [x for x in users if users[x] == Allow]
-
-
-@index.with_accessor(IResource, 'deny_roles', type='keyword')
-def get_deny_roles(ob):
-    roles = get_roles(ob)
-    return [x for x in roles if roles[x] == Deny]
-
-
-@index.with_accessor(IResource, 'deny_users', type='keyword')
-def get_deny_users(ob):
-    users = get_users(ob)
-    return [x for x in users if users[x] == Deny]
-
+    # Users that has specific access to the object
+    users = get_principals_with_access_content(ob)
+    return users
 
 @index.with_accessor(IResource, 'path', type='path')
 def get_path(ob):

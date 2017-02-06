@@ -23,8 +23,8 @@ class FunctionalTestServer(PloneFunctionalTestCase):
         """Get the root plone site."""
         resp = self.layer.requester('GET', '/plone/plone/@sharing')
         response = json.loads(resp.text)
-        self.assertTrue(response['local']['prinrole']['plone.SiteAdmin']['root'] == 'Allow')
-        self.assertTrue(response['local']['prinrole']['plone.Owner']['root'] == 'Allow')
+        self.assertTrue(response['local']['prinrole']['root']['plone.SiteAdmin'] == 'Allow')
+        self.assertTrue(response['local']['prinrole']['root']['plone.Owner'] == 'Allow')
 
     def test_set_local_plone(self):
         """Get the root plone site."""
@@ -56,6 +56,6 @@ class FunctionalTestServer(PloneFunctionalTestCase):
 
         response = json.loads(resp.text)
         self.assertTrue(len(response['inherit']) == 1)
-        self.assertTrue(response['inherit'][0]['prinrole']['plone.SiteAdmin']['root'] == 'Allow')
-        self.assertTrue(response['inherit'][0]['prinrole']['plone.Owner']['root'] == 'Allow')
+        self.assertTrue(response['inherit'][0]['prinrole']['root']['plone.SiteAdmin'] == 'Allow')
+        self.assertTrue(response['inherit'][0]['prinrole']['root']['plone.Owner'] == 'Allow')
         self.assertTrue(response['inherit'][0]['prinperm']['user1']['plone.AccessContent'] == 'AllowSingle')

@@ -33,6 +33,7 @@ from plone.server.interfaces import Allow
 from plone.server.interfaces import AllowSingle
 from plone.server.interfaces import Deny
 from plone.server.interfaces import Unset
+from plone.server.auth.role import local_roles
 
 from plone.server.interfaces import IPrincipalPermissionMap
 from plone.server.interfaces import IPrincipalRoleManager
@@ -240,6 +241,7 @@ PermissionMap = {
                    name='@sharing')
 async def sharing_post(context, request):
     """Change permissions"""
+    lroles = local_roles()
     data = await request.json()
     if 'prinrole' not in data and \
             'roleperm' not in data and \
@@ -259,7 +261,10 @@ async def sharing_post(context, request):
         func = getattr(manager, operation)
         for user, roles in data['prinrole'].items():
             for role in roles:
-                func(user, role)
+                if role in lroles:
+                    func(role, user)
+                else:
+                    raise KeyError('No valid local role')
 
     if 'prinperm' in data:
         if setting not in PermissionMap['prinperm']:
@@ -269,7 +274,7 @@ async def sharing_post(context, request):
         func = getattr(manager, operation)
         for user, permissions in data['prinperm'].items():
             for permision in permissions:
-                func(user, permision)
+                func(permision, user)
 
     if 'roleperm' in data:
         if setting not in PermissionMap['roleperm']:
@@ -279,7 +284,7 @@ async def sharing_post(context, request):
         func = getattr(manager, operation)
         for role, permissions in data['roleperm'].items():
             for permission in permissions:
-                func(role, permission)
+                func(permission, role)
 
     await notify(ObjectPermissionsModifiedEvent(context))
 

@@ -318,13 +318,14 @@ def permission(id, title, description=''):
         'permission')
 
 
-def role(id, title, description=''):
+def role(id, title, description='', local=True):
     register_configuration(
         caller_module(),
         dict(
             id=id,
             title=title,
-            description=description),
+            description=description,
+            local=local),
         'role')
 
 
@@ -430,10 +431,10 @@ def grantAll_directive(_context, principal=None, role=None):
         )
 
 
-def defineRole_directive(_context, id, title, description=''):
+def defineRole_directive(_context, id, title, description='', local=True):
     from plone.server.auth.role import Role
 
-    role = Role(id, title, description)
+    role = Role(id, title, description, local)
     zcml.utility(_context, IRole, role, name=id)
 
 

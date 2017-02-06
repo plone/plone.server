@@ -96,7 +96,6 @@ class PlonePrincipalRoleManager(PloneSecurityMap):
         PloneSecurityMap.add_cell(self, role_id, principal_id, Deny)
 
     unset_role_for_principal = PloneSecurityMap.del_cell
-    get_principals_for_role = PloneSecurityMap.get_row
 
     def get_setting(self, role_id, principal_id, default=Unset):
         return PloneSecurityMap.query_cell(

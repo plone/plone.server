@@ -38,7 +38,7 @@ from plone.server import configure
 code_principal_permission_setting = principal_permission_manager.get_setting
 code_roles_for_permission = role_permission_manager.get_roles_for_permission
 code_roles_for_principal = principal_role_manager.get_roles_for_principal
-
+code_principals_for_permission = principal_permission_manager.get_principals_for_permission
 
 SettingAsBoolean = {
         Allow: True,
@@ -352,6 +352,58 @@ class Interaction(object):
 
         cache_roles[permission] = roles
         return roles
+
+    def cached_principals(self, parent, roles, permission, level):
+        """Get the roles for a specific permission.
+
+        Global + Local + Code
+        """
+        cache = self.cache(parent)
+        try:
+            cache_principals = cache.principals
+        except AttributeError:
+            cache_principals = cache.principals = {}
+        try:
+            return cache_principals[permission]
+        except KeyError:
+            pass
+
+        if parent is None:
+            principals = dict(
+                [(role, 1)
+                 for (role, setting) in code_principals_for_permission(permission)
+                 if setting is Allow])
+            cache_principals[permission] = principals
+            return principals
+
+        principals = self.cached_principals(
+            removeSecurityProxy(getattr(parent, '__parent__', None)),
+            roles,
+            permission, 'p')
+        prinperm = IPrincipalPermissionMap(parent, None)
+        if prinperm:
+            principals = principals.copy()
+            for principal, setting in prinperm.get_principals_for_permission(permission):
+                if setting is Allow:
+                    principals[principal] = 1
+                elif setting is AllowSingle and level == 'o':
+                    principals[principal] = 1
+                elif setting is Deny and principal in principals:
+                    del principals[principal]
+
+        prinrole = IPrincipalRoleMap(parent, None)
+        if prinrole:
+            for role in roles:
+                for principal, setting in prinrole.get_principals_for_role(role):
+                    if setting is Allow:
+                        principals[principal] = 1
+                    elif setting is AllowSingle and level == 'o':
+                        principals[principal] = 1
+                    elif setting is Deny and principal in principals:
+                        del principals[principal]
+
+        cache_principals[permission] = principals
+        return principals
 
     def _global_roles_for(self, principal):
         """On a principal (user/group) get global roles."""

@@ -3,6 +3,10 @@
 
 New features:
 
+- Defining local and global roles so they can be used to define @sharing
+  On indexing security information we only get the AccessContent permission.
+  [ramonnb]
+
 - Install addons can have the context
   [ramonnb]
 

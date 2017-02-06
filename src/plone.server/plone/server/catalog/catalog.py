@@ -14,6 +14,9 @@ from zope.component import queryAdapter
 from zope.interface import implementer
 from plone.server.auth import principal_permission_manager
 from plone.server.auth import role_permission_manager
+from plone.server.auth import get_principals_with_access_content
+from plone.server.auth import get_roles_with_access_content
+from plone.server.interfaces import ISecurityInfo
 
 
 global_principal_permission_setting = principal_permission_manager.get_setting
@@ -74,6 +77,22 @@ class DefaultSearchUtility(object):
         if adapter:
             data.update(adapter())
         return data
+
+
+@configure.adapter(
+    for_=IResource,
+    provides=ISecurityInfo)
+class DefaultSecurityInfoAdapter(object):
+    def __init__(self, content):
+        self.content = content
+
+    def __call__(self):
+        """ access_users and access_roles """
+        return {
+            'access_users': get_principals_with_access_content(self.content),
+            'access_roles': get_roles_with_access_content(self.content),
+            'portal_type': self.content.portal_type
+        }
 
 
 @configure.adapter(
