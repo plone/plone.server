@@ -104,7 +104,8 @@ class FunctionalTestServer(PloneFunctionalTestCase):
         request = make_mocked_request('POST', '/')
         alsoProvides(request, IRequest)
         principals = PrincipalsView(testing_object, request)()
-        self.assertEqual(principals, ['user1', 'root'])
+        self.assertEqual(len(principals), 2)
+        self.assertTrue('user1' in principals)
 
         # Now we add the user1 with deny on the object
         resp = self.layer.requester(
