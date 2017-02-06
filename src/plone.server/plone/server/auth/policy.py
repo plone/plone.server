@@ -257,6 +257,20 @@ class Interaction(object):
         cache_prin_per[permission] = prinper
         return prinper
 
+    def global_principal_roles(self, principal, groups):
+        roles = dict(
+            [(role, SettingAsBoolean[setting])
+                for (role, setting) in code_roles_for_principal(principal)])
+        for group in groups:
+            for role, settings in code_roles_for_principal(group):
+                roles[role] = SettingAsBoolean[settings]
+        roles['plone.Anonymous'] = True  # Everybody has Anonymous
+
+        # First the global roles from user + group
+        groles = self._global_roles_for(principal)
+        roles.update(groles)
+        return roles
+
     def cached_principal_roles(self, parent, principal, groups, level):
         # Redefine it to get global roles
         cache = self.cache(parent)
@@ -272,17 +286,7 @@ class Interaction(object):
         # We reached the end so we go to see the global ones
         if parent is None:
             # Then the code roles
-            roles = dict(
-                [(role, SettingAsBoolean[setting])
-                 for (role, setting) in code_roles_for_principal(principal)])
-            for group in groups:
-                for role, settings in code_roles_for_principal(group):
-                    roles[role] = SettingAsBoolean[settings]
-            roles['plone.Anonymous'] = True  # Everybody has Anonymous
-
-            # First the global roles from user + group
-            groles = self._global_roles_for(principal)
-            roles.update(groles)
+            roles = self.global_principal_roles(principal, groups)
             
             cache_principal_roles[principal] = roles
             return roles
