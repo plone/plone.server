@@ -1,7 +1,10 @@
 1.0a11 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Automatically have behavior class implement provider. This prevents developers
+  from needing to also use `@implementer(IBehaviorFields)` on their behavior
+  configuration.
+  [vangheem]
 
 
 1.0a10 (2017-02-01)
