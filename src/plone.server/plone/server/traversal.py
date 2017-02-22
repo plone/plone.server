@@ -121,18 +121,24 @@ async def traverse(request, parent, path):
     try:
         if path[0].startswith('_'):
             raise HTTPUnauthorized()
-        context = parent[path[0]]
+        # ASYNC
+        if request._asyncdb:
+            context = await parent.__getitem__(path[0])
+        else:
+            context = parent[path[0]]
     except TypeError:
         return parent, path
     except KeyError:
         return parent, path
 
     if IDatabase.providedBy(context):
+        request._asyncdb = context.is_async()
         if SHARED_CONNECTION:
-            request.conn = context.conn
+            request.conn = await context.conn
         else:
             # Create a new conection
-            request.conn = context.open()
+            # ASYNC
+            request.conn = await context.open()
         # Check the transaction
         request._db_write_enabled = False
         request._db_id = context.id
@@ -141,8 +147,13 @@ async def traverse(request, parent, path):
     if ISite.providedBy(context):
         request._site_id = context.id
         request.site = context
-        request.site_settings = context['_registry']
-        layers = request.site_settings.get(ACTIVE_LAYERS_KEY, [])
+        # ASYNC
+        if request._asyncdb:
+            request.site_settings = await context.__getitem__('registry')
+            layers = await request.site_settings.get(ACTIVE_LAYERS_KEY, [])
+        else:
+            request.site_settings = context['_registry']
+            layers = request.site_settings.get(ACTIVE_LAYERS_KEY, [])
         for layer in layers:
             alsoProvides(request, import_class(layer))
 
@@ -244,7 +255,11 @@ class MatchInfo(AbstractMatchInfo):
 
         # If we want to close the connection after the request
         if SHARED_CONNECTION is False and hasattr(request, 'conn'):
-            request.conn.close()
+            # ASYNC
+            if request._asyncdb:
+                await request.conn.close()
+            else:
+                request.conn.close()
 
         # Make sure its a Response object to send to renderer
         if not isinstance(view_result, Response):

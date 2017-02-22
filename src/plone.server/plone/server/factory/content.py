@@ -92,18 +92,19 @@ class ApplicationRoot(object):
 
 @implementer(IDatabase)
 class Database(object):
-    def __init__(self, id, db):
+    def __init__(self, id, db, asyncdb=False):
         self.id = id
         self._db = db
+        self._asyncdb = asyncdb
         self._conn = None
         self.tm_ = RequestAwareTransactionManager()
 
     def get_transaction_manager(self):
         return self.tm_
 
-    def open(self):
+    async def open(self):
         tm_ = RequestAwareTransactionManager()
-        return self._db.open(transaction_manager=tm_)
+        return await self._db.open(transaction_manager=tm_)
 
     def _open(self):
         self._conn = self._db.open(transaction_manager=self.tm_)
@@ -112,10 +113,13 @@ class Database(object):
         def on_close():
             self._conn = None
 
+    def is_async(self):
+        return self._asyncdb
+
     @property
-    def conn(self):
+    async def conn(self):
         if self._conn is None:
-            self._open()
+            await self._open()
         return self._conn
 
     @property
