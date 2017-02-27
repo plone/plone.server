@@ -72,10 +72,27 @@ class RequestAwareTransactionManager(transaction.TransactionManager):
 
     async def __aexit__(self, type_, value, traceback):
         request = get_current_request()
+        txn = self.get(request)
         if value is None:
-            await sync(request)(self.get(request).commit)
+            await commit(txn, request)
         else:
-            await sync(request)(self.get(request).abort)
+            await abort(txn, request)
+
+    async def acommit(self, request=None):
+        """ See ITransactionManager.
+        """
+        if request is None:
+            request = get_current_request()
+        txn = self.get(request)
+        return await commit(txn, request)
+
+    async def aabort(self, request=None):
+        """ See ITransactionManager.
+        """
+        if request is None:
+            request = get_current_request()
+        txn = self.get(request)
+        return await abort(txn, request)
 
     # ITransactionManager
     def get(self, request=None):
@@ -119,10 +136,11 @@ class RequestBoundTransactionManagerContextManager(object):
 
     async def __aexit__(self, type_, value, traceback):
         request = self.request
+        txn = self.get(request)
         if value is None:
-            await sync(request)(self.tm.get(request).commit)
+            await commit(txn, request)
         else:
-            await sync(request)(self.tm.get(request).abort)
+            await abort(txn, request)
 
 
 @implementer(ISavepointDataManager)
@@ -342,14 +360,18 @@ def tm(request):
 
 
 async def commit(txn, request):
-    if SHARED_CONNECTION is False:
+    if asyncio.iscoroutinefunction(txn.commit):
+        await txn.commit()
+    elif SHARED_CONNECTION is False:
         await txn.acommit()
     else:
         await sync(request)(txn.commit)
 
 
 async def abort(txn, request):
-    if SHARED_CONNECTION is False:
+    if asyncio.iscoroutinefunction(txn.abort):
+        await txn.abort()
+    elif SHARED_CONNECTION is False:
         txn.abort()
     else:
         await sync(request)(txn.abort)

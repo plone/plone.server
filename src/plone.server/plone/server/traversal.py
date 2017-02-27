@@ -121,28 +121,37 @@ async def traverse(request, parent, path):
     try:
         if path[0].startswith('_'):
             raise HTTPUnauthorized()
-        context = parent[path[0]]
+        if hasattr(request, '_asyncdb') and request._asyncdb:
+            context = await parent.asyncget(path[0])
+        else:
+            context = parent[path[0]]
     except TypeError:
         return parent, path
     except KeyError:
         return parent, path
 
     if IDatabase.providedBy(context):
-        if SHARED_CONNECTION:
-            request.conn = context.conn
+        request._db_write_enabled = False
+        request._db_id = context.id
+        request._asyncdb = context.is_async()
+        if request._asyncdb:
+            request.conn = await context.aopen()
+            context = await request.conn.root()
         else:
             # Create a new conection
             request.conn = context.open()
+            context = request.conn.root()
         # Check the transaction
-        request._db_write_enabled = False
-        request._db_id = context.id
-        context = request.conn.root()
 
     if ISite.providedBy(context):
         request._site_id = context.id
         request.site = context
-        request.site_settings = context['_registry']
-        layers = request.site_settings.get(ACTIVE_LAYERS_KEY, [])
+        if hasattr(request, '_asyncdb') and request._asyncdb:
+            request.site_settings = await context.asyncget('registry')
+            layers = await request.site_settings.get(ACTIVE_LAYERS_KEY, [])
+        else:
+            request.site_settings = context['_registry']
+            layers = request.site_settings.get(ACTIVE_LAYERS_KEY, [])
         for layer in layers:
             alsoProvides(request, import_class(layer))
 
@@ -244,7 +253,11 @@ class MatchInfo(AbstractMatchInfo):
 
         # If we want to close the connection after the request
         if SHARED_CONNECTION is False and hasattr(request, 'conn'):
-            request.conn.close()
+            # ASYNC
+            if request._asyncdb:
+                await request.conn.close()
+            else:
+                request.conn.close()
 
         # Make sure its a Response object to send to renderer
         if not isinstance(view_result, Response):
