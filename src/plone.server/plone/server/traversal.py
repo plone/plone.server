@@ -267,7 +267,7 @@ class MatchInfo(AbstractMatchInfo):
 
         futures_to_wait = request._futures.values()
         if futures_to_wait:
-            await asyncio.gather(futures_to_wait)
+            await asyncio.gather(*list(futures_to_wait))
 
         return resp
 
