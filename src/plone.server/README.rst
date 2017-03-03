@@ -1,3 +1,6 @@
+
+WARNING: `plone.server` has been renamed to guillotina and moved to https://github.com/plone/guillotina
+
 Introduction
 ============
 
