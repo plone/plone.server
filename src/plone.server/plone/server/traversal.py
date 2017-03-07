@@ -132,6 +132,7 @@ async def traverse(request, parent, path):
             request.conn = context.conn
         else:
             # Create a new conection
+            context._db.pool._reduce_size(strictly_less=True)
             request.conn = context.open()
         # Check the transaction
         request._db_write_enabled = False
