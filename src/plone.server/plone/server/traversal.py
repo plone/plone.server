@@ -134,6 +134,7 @@ async def traverse(request, parent, path):
             # Create a new conection
             context._db.pool._reduce_size(strictly_less=True)
             print('BEFORE AVAILABLE: %d' % len(context._db.pool.available))
+            print('ALL CONNECTIONS: %d' % len(context._db.pool.all))
             request.conn = context.open()
         # Check the transaction
         request._db_write_enabled = False
@@ -248,6 +249,7 @@ class MatchInfo(AbstractMatchInfo):
         if SHARED_CONNECTION is False and hasattr(request, 'conn'):
             request.conn.close()
             print('AFTER AVAILABLE: %d' % len(request.conn._db.pool.available))
+            print('AFTER ALL CONNECTIONS: %d' % len(request.conn._db.pool.all))
 
 
         # Make sure its a Response object to send to renderer
