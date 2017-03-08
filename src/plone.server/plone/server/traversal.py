@@ -132,7 +132,7 @@ async def traverse(request, parent, path):
             request.conn = context.conn
         else:
             # Create a new conection
-            if len(context._db.pool.all) + 5 > context._db.pool._size:
+            if len(context._db.pool.all) > context._db.pool._size + 5:
                 context._db.pool._reduce_size(strictly_less=True)
                 await asyncio.sleep(2)
             print('BEFORE AVAILABLE: %d' % len(context._db.pool.available))
@@ -215,19 +215,18 @@ class MatchInfo(AbstractMatchInfo):
         """Main handler function for aiohttp."""
         if request.method in WRITING_VERBS:
             try:
-                async with locked(self.resource):
-                    request._db_write_enabled = True
-                    txn = request.conn.transaction_manager.begin(request)
-                    # We try to avoid collisions on the same instance of
-                    # plone.server
-                    view_result = await self.view()
-                    if isinstance(view_result, ErrorResponse) or \
-                            isinstance(view_result, UnauthorizedResponse):
-                        # If we don't throw an exception and return an specific
-                        # ErrorReponse just abort
-                        await abort(txn, request)
-                    else:
-                        await commit(txn, request)
+                request._db_write_enabled = True
+                txn = request.conn.transaction_manager.begin(request)
+                # We try to avoid collisions on the same instance of
+                # plone.server
+                view_result = await self.view()
+                if isinstance(view_result, ErrorResponse) or \
+                        isinstance(view_result, UnauthorizedResponse):
+                    # If we don't throw an exception and return an specific
+                    # ErrorReponse just abort
+                    await abort(txn, request)
+                else:
+                    await commit(txn, request)
 
             except Unauthorized as e:
                 await abort(txn, request)
@@ -332,6 +331,8 @@ class TraversalRouter(AbstractRouter):
         if result is not None:
             return result
         else:
+            if hasattr(request, 'conn'):
+                request.conn.close()
             raise HTTPNotFound()
 
     async def real_resolve(self, request):
