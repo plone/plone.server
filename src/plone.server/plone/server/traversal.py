@@ -326,7 +326,8 @@ class TraversalRouter(AbstractRouter):
             logger.error(
                 "Exception on resolve execution",
                 exc_info=e)
-            request.conn.close()
+            if hasattr(request, 'conn'):
+                request.conn.close()
             raise e
         if result is not None:
             return result
