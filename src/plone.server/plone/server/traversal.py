@@ -132,6 +132,8 @@ async def traverse(request, parent, path):
             request.conn = context.conn
         else:
             # Create a new conection
+            if len(context._db.pool.all) > context._db.pool._size:
+                await asyncio.sleep(2)
             context._db.pool._reduce_size(strictly_less=True)
             print('BEFORE AVAILABLE: %d' % len(context._db.pool.available))
             print('ALL CONNECTIONS: %d' % len(context._db.pool.all))
@@ -270,7 +272,6 @@ class MatchInfo(AbstractMatchInfo):
         await resp.write_eof()
         resp._body = None
         resp.force_close()
-
         futures_to_wait = request._futures.values()
         if futures_to_wait:
             await asyncio.gather(*list(futures_to_wait))
