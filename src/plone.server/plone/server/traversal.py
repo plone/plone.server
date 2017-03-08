@@ -132,7 +132,7 @@ async def traverse(request, parent, path):
             request.conn = context.conn
         else:
             # Create a new conection
-            if len(context._db.pool.all) > context._db.pool._size + 5:
+            while len(context._db.pool.all) > context._db.pool._size + 5:
                 context._db.pool._reduce_size(strictly_less=True)
                 await asyncio.sleep(2)
             print('BEFORE AVAILABLE: %d' % len(context._db.pool.available))
