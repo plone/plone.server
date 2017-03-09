@@ -52,6 +52,8 @@ import json
 import traceback
 import uuid
 
+MAX_RETRIES = 10
+
 
 async def do_traverse(request, parent, path):
     """Traverse for the code API."""
@@ -132,11 +134,13 @@ async def traverse(request, parent, path):
             request.conn = context.conn
         else:
             # Create a new conection
+            count = 0
             while len(context._db.pool.all) > context._db.pool._size + 5:
                 context._db.pool._reduce_size(strictly_less=True)
-                await asyncio.sleep(2)
-            print('BEFORE AVAILABLE: %d' % len(context._db.pool.available))
-            print('ALL CONNECTIONS: %d' % len(context._db.pool.all))
+                await asyncio.sleep(1)
+                count += 1
+                if count > MAX_RETRIES:
+                    raise Exception('No more connections')
             request.conn = context.open()
         # Check the transaction
         request._db_write_enabled = False
@@ -249,8 +253,6 @@ class MatchInfo(AbstractMatchInfo):
         # If we want to close the connection after the request
         if SHARED_CONNECTION is False and hasattr(request, 'conn'):
             request.conn.close()
-            print('AFTER AVAILABLE: %d' % len(request.conn._db.pool.available))
-            print('AFTER ALL CONNECTIONS: %d' % len(request.conn._db.pool.all))
 
 
         # Make sure its a Response object to send to renderer
