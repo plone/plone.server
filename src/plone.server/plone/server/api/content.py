@@ -292,7 +292,7 @@ async def sharing_post(context, request):
                 changed = True
                 func(permission, role)
 
-    self.context._p_changed = 1
+    context._p_changed = 1
     if changed:
         await notify(ObjectPermissionsModifiedEvent(context, data))
 
