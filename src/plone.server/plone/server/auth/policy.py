@@ -33,6 +33,7 @@ from plone.server.interfaces import IGroups
 from zope.component import getUtility
 from plone.server.transactions import get_current_request
 from plone.server import configure
+from plone.server.interfaces.views import IView
 
 
 code_principal_permission_setting = principal_permission_manager.get_setting
@@ -128,7 +129,9 @@ class Interaction(object):
                 continue
 
             self.principal = principal
-            # Check the permission
+            # Check the permission, if its a view dont check permission on view
+            if IView.providedBy(obj):
+                obj = obj.__parent__
             if self.cached_decision(
                     obj,
                     principal.id,
