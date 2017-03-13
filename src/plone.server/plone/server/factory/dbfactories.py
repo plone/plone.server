@@ -95,6 +95,20 @@ def RelStorageConfigurationFactory(key, dbconfig):
         dsn = "dbname={dbname} user={user} host={host} password={password} port={port}".format(**dbconfig['dsn'])  # noqa
         adapter = PostgreSQLAdapter(dsn=dsn, options=options)
     rs = RelStorage(adapter=adapter, options=options)
+    db = DB(rs)
+    try:
+        conn = db.open()
+        rootobj = conn.root()
+        if not IDatabase.providedBy(rootobj):
+            alsoProvides(rootobj, IDatabase)
+        transaction.commit()
+    except:
+        pass
+    finally:
+        rootobj = None
+        conn.close()
+        db.close()
+    rs = RelStorage(adapter=adapter, options=options)
     db = RequestAwareDB(rs, **config)
     return Database(key, db)
 
