@@ -342,7 +342,6 @@ class Interaction(object):
                  if setting is Allow])
             cache_roles[permission] = roles
             return roles
-
         roles = self.cached_roles(
             removeSecurityProxy(getattr(parent, '__parent__', None)),
             permission, 'p')
@@ -357,7 +356,8 @@ class Interaction(object):
                 elif setting is Deny and role in roles:
                     del roles[role]
 
-        cache_roles[permission] = roles
+        if level != 'o':
+            cache_roles[permission] = roles
         return roles
 
     def cached_principals(self, parent, roles, permission, level):
@@ -409,7 +409,8 @@ class Interaction(object):
                     elif setting is Deny and principal in principals:
                         del principals[principal]
 
-        cache_principals[permission] = principals
+        if level != 'o':
+            cache_principals[permission] = principals
         return principals
 
     def _global_roles_for(self, principal):
