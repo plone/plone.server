@@ -1,7 +1,8 @@
 1.0a14 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Fix aiohttp 2 compatibility
+  [vangheem]
 
 
 1.0a13 (2017-02-27)

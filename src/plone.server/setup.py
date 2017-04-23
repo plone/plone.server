@@ -59,7 +59,7 @@ setup(
     namespace_packages=['plone'],
     ext_modules=ext_modules,
     install_requires=[
-        'aiohttp',
+        'aiohttp>=2.0.0',
         'jsonschema',
         'python-dateutil',
         'BTrees',
