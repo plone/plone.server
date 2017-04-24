@@ -170,6 +170,7 @@ def load_adapter(_context, adapter):
         # we are automatically applying the provides interface to
         # registered class objects
         classImplements(klass, conf['provides'])
+
     zcml.adapter(
         _context,
         factory=(factory,),

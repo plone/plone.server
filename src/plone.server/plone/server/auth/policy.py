@@ -290,7 +290,7 @@ class Interaction(object):
         if parent is None:
             # Then the code roles
             roles = self.global_principal_roles(principal, groups)
-            
+
             cache_principal_roles[principal] = roles
             return roles
 
@@ -451,5 +451,3 @@ class Interaction(object):
             if permission in permissions:
                 return level_setting_as_boolean('p', permissions[permission])
         return None
-
-

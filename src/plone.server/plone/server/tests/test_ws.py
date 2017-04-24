@@ -25,7 +25,7 @@ class FunctionalTestServer(PloneFunctionalTestCase):
                 }
                 ws.send_str(json.dumps(sending))
                 async for msg in ws:
-                    if msg.tp == aiohttp.MsgType.text:
+                    if msg.tp == aiohttp.WSMsgType.text:
                         message = json.loads(msg.data)
                         if 'op' in message and message['op'] == 'close':
                             await ws.close()
@@ -33,9 +33,9 @@ class FunctionalTestServer(PloneFunctionalTestCase):
                         else:
                             self.assertTrue(len(message['items']) == 0)
                             await ws.close()
-                    elif msg.tp == aiohttp.MsgType.closed:
+                    elif msg.tp == aiohttp.WSMsgType.closed:
                         break  # noqa
-                    elif msg.tp == aiohttp.MsgType.error:
+                    elif msg.tp == aiohttp.WSMsgType.error:
                         break  # noqa
                 return {}
 

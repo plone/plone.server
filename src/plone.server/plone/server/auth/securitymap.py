@@ -42,7 +42,7 @@ class SecurityMap(object):
             request = get_current_request()
         except RequestNotFound:
             return
-        interaction = IInteraction(request)
+        interaction = IInteraction(request, None)
         if interaction is not None:
             try:
                 invalidate_cache = interaction.invalidate_cache

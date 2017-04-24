@@ -79,8 +79,12 @@ class Absolute_URL(object):
         elif virtualhost:
             return virtualhost + self.request._db_id + path
         else:
-            return self.request.scheme + '://' + self.request.host + '/' +\
+            try:
+                return self.request.scheme + '://' + self.request.host + '/' +\
                 self.request._db_id + path
+            except:
+                import pdb; pdb.set_trace()
+                raise
 
 
 @configure.adapter(

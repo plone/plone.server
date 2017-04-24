@@ -76,9 +76,9 @@ class BasicFileManager(object):
         if file is None:
             raise AttributeError('No field value')
 
-        resp = aiohttp.web.StreamResponse(headers=aiohttp.MultiDict({
+        resp = aiohttp.web.StreamResponse(headers={
             'CONTENT-DISPOSITION': 'attachment; filename="%s"' % file.filename
-        }))
+        })
         resp.content_type = file.contentType
         resp.content_length = file.size
         await resp.prepare(self.request)

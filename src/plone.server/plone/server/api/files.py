@@ -22,9 +22,9 @@ class DefaultGET(DownloadService):
             filepath = str(self.context.file_path.absolute())
             filename = self.context.file_path.name
             with open(filepath, 'rb') as f:
-                resp = StreamResponse(headers=aiohttp.MultiDict({
+                resp = StreamResponse(headers={
                     'CONTENT-DISPOSITION': 'attachment; filename="%s"' % filename
-                }))
+                })
                 resp.content_type = mimetypes.guess_type(filename)
                 data = f.read()
                 resp.content_length = len(data)

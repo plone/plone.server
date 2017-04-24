@@ -189,7 +189,7 @@ class PloneQueueLayer(PloneServerBaseLayer):
     @classmethod
     def setUp(cls):
         cls.app.add_async_utility(QUEUE_UTILITY_CONFIG)
-        loop = cls.aioapp.loop
+        loop = cls.aioapp.loop or asyncio.get_event_loop()
 
         import threading
 
@@ -216,7 +216,7 @@ class PloneBaseLayer(PloneServerBaseLayer):
     @classmethod
     def setUp(cls):
         """With a Plone Site."""
-        loop = cls.aioapp.loop
+        loop = cls.aioapp.loop or asyncio.get_event_loop()
         cls.handler = cls.aioapp.make_handler(debug=DEBUG, keep_alive_on=False)
         cls.srv = loop.run_until_complete(loop.create_server(
             cls.handler,
@@ -250,7 +250,6 @@ class PloneBaseLayer(PloneServerBaseLayer):
             time.sleep(1)
         # Wait to stop
         loop.run_until_complete(cls.handler.finish_connections())
-        loop.run_until_complete(cls.aioapp.finish())
         cls.srv.close()
         loop.run_until_complete(cls.srv.wait_closed())
 
