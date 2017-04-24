@@ -1,4 +1,4 @@
-1.0a15 (unreleased)
+1.0a15 (2017-04-24)
 -------------------
 
 - For aiohttp 2 compatibility fixes
