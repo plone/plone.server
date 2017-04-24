@@ -13,6 +13,7 @@ _ = MessageFactory('plone')
 
 
 app_settings = {
+    "aiohttp_settings": {},
     "databases": [],
     "address": 8080,
     "static": [],

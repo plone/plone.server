@@ -101,7 +101,9 @@ def make_app(config_file=None, settings=None):
     app_settings.update(_delayed_default_settings)
 
     # Initialize aiohttp app
-    app = web.Application(router=TraversalRouter())
+    app = web.Application(
+        router=TraversalRouter(),
+        **settings.get('aiohttp_settings', {}))
 
     # Create root Application
     root = ApplicationRoot(config_file)

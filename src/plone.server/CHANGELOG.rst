@@ -1,7 +1,9 @@
 1.0a16 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Be able to provide `aiohttp_settings` in config.json to configure parts of
+  aiohttp application
+  [vangheem]
 
 
 1.0a15 (2017-04-24)
