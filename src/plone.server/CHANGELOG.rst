@@ -1,6 +1,9 @@
 1.0a16 (unreleased)
 -------------------
 
+- Fix memory leak in get_current_request
+  [vangheem]
+
 - Be able to provide `aiohttp_settings` in config.json to configure parts of
   aiohttp application
   [vangheem]

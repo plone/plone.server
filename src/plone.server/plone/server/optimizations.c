@@ -17,6 +17,8 @@ current_request()
       if (PyFrame_FastToLocalsWithError(f) < 0)
         return NULL;
 
+			Py_INCREF(f->f_locals);
+
       if (PyDict_CheckExact(f->f_locals)) {
         self = PyDict_GetItem(f->f_locals, PyUnicode_FromString("self"));
 
@@ -25,14 +27,16 @@ current_request()
           if (PyObject_HasAttr(self, PyUnicode_FromString("request"))) {
             found = 1;
             request = PyObject_GetAttr(self, PyUnicode_FromString("request"));
-          } 
+          }
           if (PyObject_IsInstance(self, RequestHandler)) {
             found = 1;
             request = PyDict_GetItem(f->f_locals, PyUnicode_FromString("request"));
+						Py_INCREF(request);
           }
         }
-
       }
+
+			Py_DECCREF(f->f_locals);
       f = f->f_back;
     }
 
@@ -43,7 +47,6 @@ current_request()
         return NULL;
     }
 
-    Py_INCREF(request);
     return (PyObject*)request;
 }
 
