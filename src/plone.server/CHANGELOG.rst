@@ -1,4 +1,4 @@
-1.0a16 (unreleased)
+1.0a16 (2017-05-04)
 -------------------
 
 - Fix memory leak in get_current_request
